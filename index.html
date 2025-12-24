@@ -206,4 +206,822 @@
               <div>
                 <h2 class="text-sm font-semibold text-slate-50">Sales Funnel</h2>
                 <p class="text-xs text-slate-400">
-                  Lead girişi &gt;
+                  Lead girişi &gt; atanma &gt; arama &gt; randevu &gt; satış.
+                </p>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="funnelChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Agent Performance -->
+          <div
+            class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-50">Temsilci Performansı</h2>
+                <p class="text-xs text-slate-400">Toplam arama, randevu ve satış sayısı.</p>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="agentChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Platform Distribution -->
+          <div
+            class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-50">Platform Dağılımı</h2>
+                <p class="text-xs text-slate-400">
+                  Hangi reklam kanalı ne kadar lead üretiyor?
+                </p>
+              </div>
+            </div>
+            <div class="flex h-64 items-center gap-4">
+              <div class="h-full flex-1">
+                <canvas id="platformChart"></canvas>
+              </div>
+              <div class="w-32 space-y-2 text-xs text-slate-300" id="platformLegend"></div>
+            </div>
+          </div>
+
+          <!-- Time Analysis -->
+          <div
+            class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-50">Zaman Analizi</h2>
+                <p class="text-xs text-slate-400">Gün içi arama yoğunluğu (saat bazında).</p>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="timeChart"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- Table -->
+        <section
+          class="mt-6 rounded-3xl bg-slate-950/70 p-3 ring-1 ring-slate-800/80 shadow-[0_24px_80px_rgba(15,23,42,1)] backdrop-blur-2xl"
+        >
+          <div class="mb-2 flex items-center justify-between gap-3 px-1">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-50">
+                Lead Listeleme &amp; Drill-down
+              </h2>
+              <p class="text-xs text-slate-400">
+                <span id="rowCountText">0</span> kayıt görüntüleniyor. Satır üzerine gelerek
+                ek aksiyonları ortaya çıkarın.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-slate-400">
+              <div class="flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                <span>Geçmiş follow-up</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                <span>&gt;15dk SLA</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="relative max-h-[430px] overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/90"
+          >
+            <div
+              class="scrollbar-thin scrollbar-thumb-slate-700 max-h-[430px] overflow-auto"
+            >
+              <table class="min-w-full text-left text-xs">
+                <thead
+                  class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur"
+                >
+                  <tr>
+                    <th class="px-3 py-2 font-medium text-slate-400">ID</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Müşteri</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Temsilci</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Proje</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Platform</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Atanma</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Arama</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">SLA (dk)</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Durum</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Ret Nedeni</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Ses</th>
+                    <th class="px-3 py-2 font-medium text-slate-400">Not</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Dashboard Script -->
+    <script>
+      // -------- Mock Data & Helpers --------
+      const AGENTS = ["Temsilci 1", "Temsilci 2", "Temsilci 3"];
+      const PLATFORMS = ["FB", "IG", "Web"];
+      const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
+      const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
+      const LEAD_STATUS = ["Follow Up", "Randevu", "Satış", "Ret"];
+      const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
+      const PLATFORM_COLORS = {
+        FB: "#3b82f6",
+        IG: "#ec4899",
+        Web: "#22c55e",
+      };
+
+      function randomChoice(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function addMinutes(date, minutes) {
+        return new Date(date.getTime() + minutes * 60000);
+      }
+
+      function formatDate(date) {
+        return date.toISOString().slice(0, 10);
+      }
+
+      function formatTime(date) {
+        return date.toTimeString().slice(0, 5);
+      }
+
+      function diffInMinutes(a, b) {
+        return Math.round((b.getTime() - a.getTime()) / 60000);
+      }
+
+      function createMockData() {
+        const base = new Date();
+        const data = [];
+        for (let i = 1; i <= 24; i++) {
+          const createdAt = new Date(
+            base.getFullYear(),
+            base.getMonth(),
+            base.getDate() - (i % 3),
+            9 + (i % 8),
+            (i * 7) % 60
+          );
+          const agent = randomChoice(AGENTS);
+          const platform = randomChoice(PLATFORMS);
+          const project = randomChoice(PROJECTS);
+
+          const assignedAt = addMinutes(createdAt, 5 + (i % 20));
+          const callAt = addMinutes(assignedAt, (i * 3) % 40);
+
+          const callStatus = randomChoice(CALL_STATUS);
+          let leadStatus = randomChoice(LEAD_STATUS);
+          if (callStatus.startsWith("No Response")) {
+            leadStatus = randomChoice(["Follow Up", "Ret"]);
+          }
+
+          let rejectionReason = "";
+          if (leadStatus === "Ret") {
+            rejectionReason = randomChoice(REJECTION_REASONS);
+          }
+
+          const callDuration = callStatus === "Arandı" ? 60 + ((i * 13) % 300) : 0;
+
+          data.push({
+            id: i,
+            createdAt,
+            createdAtStr: formatDate(createdAt),
+            agent,
+            assignedAt,
+            assignedDateStr: formatDate(assignedAt),
+            assignedTimeStr: formatTime(assignedAt),
+            customerName: `Müşteri ${i}`,
+            platform,
+            project,
+            callAt,
+            callTimeStr: formatTime(callAt),
+            callStatus,
+            callDuration,
+            leadStatus,
+            rejectionReason,
+            notes:
+              leadStatus === "Satış"
+                ? "Satış başarılı, sözleşme gönderildi."
+                : leadStatus === "Randevu"
+                ? "Showroom randevusu ayarlandı."
+                : leadStatus === "Follow Up"
+                ? "Müşteri tekrar aranacak."
+                : rejectionReason
+                ? `Ret nedeni: ${rejectionReason}.`
+                : "Genel not yok.",
+            hasRecording: callDuration > 0,
+          });
+        }
+        return data;
+      }
+
+      const MOCK_DATA = createMockData();
+      const now = new Date();
+
+      // -------- Global State --------
+      const state = {
+        agent: "ALL",
+        project: "ALL",
+        platform: "ALL",
+        funnelStage: null,
+        chartFilter: null, // { type: "agent" | "platform" | "hour", value: ... }
+        search: "",
+      };
+
+      // -------- DOM Elements --------
+      const agentFilterEl = document.getElementById("agentFilter");
+      const projectFilterEl = document.getElementById("projectFilter");
+      const platformFilterEl = document.getElementById("platformFilter");
+      const searchInputEl = document.getElementById("searchInput");
+      const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+      const resetDrilldownBtn = document.getElementById("resetDrilldownBtn");
+      const funnelStatusEl = document.getElementById("funnelStatus");
+      const chartStatusEl = document.getElementById("chartStatus");
+      const rowCountTextEl = document.getElementById("rowCountText");
+      const kpiCardsEl = document.getElementById("kpiCards");
+      const platformLegendEl = document.getElementById("platformLegend");
+      const summaryTextEl = document.getElementById("summaryText");
+      const summaryBadgeEl = document.getElementById("summaryBadge");
+      const tableBodyEl = document.getElementById("tableBody");
+
+      // -------- Filters Setup --------
+      function fillSelectOptions(select, options) {
+        options.forEach((v) => {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          select.appendChild(opt);
+        });
+      }
+      fillSelectOptions(agentFilterEl, AGENTS);
+      fillSelectOptions(projectFilterEl, PROJECTS);
+      fillSelectOptions(platformFilterEl, PLATFORMS);
+
+      // -------- Filtering --------
+      function applyFilters() {
+        return MOCK_DATA.filter((row) => {
+          if (state.agent !== "ALL" && row.agent !== state.agent) return false;
+          if (state.project !== "ALL" && row.project !== state.project) return false;
+          if (state.platform !== "ALL" && row.platform !== state.platform) return false;
+
+          if (state.funnelStage) {
+            const s = state.funnelStage;
+            if (s === "Lead Girişi") {
+              // all leads
+            } else if (s === "Atanmış" && !row.assignedAt) return false;
+            else if (s === "Arandı" && row.callStatus !== "Arandı") return false;
+            else if (s === "Randevu" && row.leadStatus !== "Randevu") return false;
+            else if (s === "Satış" && row.leadStatus !== "Satış") return false;
+          }
+
+          if (state.chartFilter) {
+            const f = state.chartFilter;
+            if (f.type === "agent" && row.agent !== f.value) return false;
+            if (f.type === "platform" && row.platform !== f.value) return false;
+            if (f.type === "hour" && row.callAt?.getHours() !== f.value) return false;
+          }
+
+          if (state.search.trim()) {
+            const q = state.search.toLowerCase();
+            const target = (
+              row.customerName +
+              " " +
+              row.id +
+              " " +
+              row.agent +
+              " " +
+              row.project +
+              " " +
+              row.platform
+            ).toLowerCase();
+            if (!target.includes(q)) return false;
+          }
+
+          return true;
+        });
+      }
+
+      // -------- KPI Cards --------
+      function renderKpiCards(filtered) {
+        const total = filtered.length;
+        const sales = filtered.filter((r) => r.leadStatus === "Satış").length;
+        const conv = total ? ((sales / total) * 100).toFixed(1) + "%" : "-";
+
+        let sumSla = 0;
+        let countSla = 0;
+        let over15 = 0;
+        filtered.forEach((r) => {
+          if (r.assignedAt && r.callAt) {
+            const d = diffInMinutes(r.assignedAt, r.callAt);
+            sumSla += d;
+            countSla++;
+            if (d > 15) over15++;
+          }
+        });
+        const avgSla = countSla ? (sumSla / countSla).toFixed(1) : "-";
+        const overRate = countSla ? Math.round((over15 / countSla) * 100) : 0;
+
+        const totalCalls = filtered.filter((r) => r.callStatus).length;
+        const successfulCalls = filtered.filter((r) => r.callStatus === "Arandı").length;
+        const successRate = totalCalls
+          ? ((successfulCalls / totalCalls) * 100).toFixed(1) + "%"
+          : "-";
+
+        const lostLeads = filtered.filter(
+          (r) => r.leadStatus === "Ret" || r.callStatus === "No Response 3"
+        ).length;
+
+        const cards = [
+          {
+            label: "Ort. Lead Yanıtlama Hızı (SLA)",
+            value: avgSla === "-" ? "-" : avgSla + " dk",
+            helper: avgSla === "-" ? "Yeterli veri yok" : `>%15 SLA: ${overRate}%`,
+            tone:
+              avgSla !== "-" && parseFloat(avgSla) > 15
+                ? "danger"
+                : "success",
+          },
+          {
+            label: "Genel Dönüşüm Oranı",
+            value: conv,
+            helper: `${sales} satış / ${total} lead`,
+            tone: "neutral",
+          },
+          {
+            label: "Toplam Arama & Başarılı Arama",
+            value: totalCalls ? `${totalCalls} arama` : "Veri yok",
+            helper: `Başarılı % ${successRate}`,
+            tone: "success",
+          },
+          {
+            label: "Kayıp / Niteliksiz Lead",
+            value: lostLeads,
+            helper: "Ret + 3. no-response",
+            tone: lostLeads > 0 ? "danger" : "neutral",
+          },
+        ];
+
+        kpiCardsEl.innerHTML = "";
+        cards.forEach((c) => {
+          const toneClasses =
+            c.tone === "danger"
+              ? "bg-red-500/10 text-red-300 ring-red-500/40"
+              : c.tone === "success"
+              ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/40"
+              : "bg-primary-500/10 text-primary-200 ring-primary-500/40";
+
+          const card = document.createElement("div");
+          card.className =
+            "rounded-3xl bg-slate-900/80 ring-1 ring-slate-700/60 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-xl";
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+                  ${c.label}
+                </p>
+                <p class="mt-2 text-2xl font-semibold ${toneClasses.split(" ")[1]}">
+                  ${c.value}
+                </p>
+              </div>
+              <div class="inline-flex items-center justify-center rounded-2xl px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] ${toneClasses}">
+                ${c.helper}
+              </div>
+            </div>`;
+          kpiCardsEl.appendChild(card);
+        });
+      }
+
+      // -------- Charts --------
+      let funnelChart, agentChart, platformChart, timeChart;
+
+      function buildFunnelData(filtered) {
+        const total = filtered.length;
+        const assigned = filtered.filter((r) => r.assignedAt).length;
+        const called = filtered.filter((r) => r.callStatus === "Arandı").length;
+        const appointment = filtered.filter((r) => r.leadStatus === "Randevu").length;
+        const sales = filtered.filter((r) => r.leadStatus === "Satış").length;
+        return {
+          labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu", "Satış"],
+          values: [total, assigned, called, appointment, sales],
+        };
+      }
+
+      function buildAgentData(filtered) {
+        return AGENTS.map((a) => {
+          const rows = filtered.filter((r) => r.agent === a);
+          return {
+            agent: a,
+            totalCalls: rows.filter((r) => r.callStatus).length,
+            appointments: rows.filter((r) => r.leadStatus === "Randevu").length,
+            sales: rows.filter((r) => r.leadStatus === "Satış").length,
+          };
+        });
+      }
+
+      function buildPlatformData(filtered) {
+        return PLATFORMS.map((p) => ({
+          platform: p,
+          value: filtered.filter((r) => r.platform === p).length,
+        })).filter((d) => d.value > 0);
+      }
+
+      function buildTimeData(filtered) {
+        const buckets = {};
+        filtered.forEach((r) => {
+          if (!r.callAt) return;
+          const h = r.callAt.getHours();
+          const label = String(h).padStart(2, "0") + ":00";
+          if (!buckets[h]) buckets[h] = { hour: h, label, calls: 0 };
+          buckets[h].calls++;
+        });
+        return Object.values(buckets).sort((a, b) => a.hour - b.hour);
+      }
+
+      function destroyChart(ch) {
+        if (ch) ch.destroy();
+      }
+
+      function renderCharts(filtered) {
+        const funnel = buildFunnelData(filtered);
+        const agents = buildAgentData(filtered);
+        const platforms = buildPlatformData(filtered);
+        const times = buildTimeData(filtered);
+
+        // Funnel chart
+        destroyChart(funnelChart);
+        const ctxFunnel = document.getElementById("funnelChart").getContext("2d");
+        funnelChart = new Chart(ctxFunnel, {
+          type: "bar",
+          data: {
+            labels: funnel.labels,
+            datasets: [
+              {
+                label: "Adet",
+                data: funnel.values,
+                backgroundColor: funnel.labels.map((_, i) =>
+                  i === 0
+                    ? "rgba(59,130,246,0.6)"
+                    : i === 4
+                    ? "rgba(34,197,94,0.7)"
+                    : "rgba(99,102,241,0.6)"
+                ),
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true },
+            },
+            scales: {
+              x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+              y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+            },
+            onClick(_, elements) {
+              if (!elements.length) return;
+              const index = elements[0].index;
+              const stage = funnel.labels[index];
+              state.funnelStage = state.funnelStage === stage ? null : stage;
+              funnelStatusEl.textContent = state.funnelStage || "Tümü";
+              renderAll();
+            },
+          },
+        });
+
+        // Agent chart
+        destroyChart(agentChart);
+        const ctxAgent = document.getElementById("agentChart").getContext("2d");
+        agentChart = new Chart(ctxAgent, {
+          type: "bar",
+          data: {
+            labels: agents.map((a) => a.agent),
+            datasets: [
+              {
+                label: "Toplam Arama",
+                data: agents.map((a) => a.totalCalls),
+                backgroundColor: "rgba(59,130,246,0.6)",
+              },
+              {
+                label: "Randevu",
+                data: agents.map((a) => a.appointments),
+                backgroundColor: "rgba(34,197,94,0.7)",
+              },
+              {
+                label: "Satış",
+                data: agents.map((a) => a.sales),
+                backgroundColor: "rgba(168,85,247,0.7)",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                labels: { color: "#cbd5f5", font: { size: 11 } },
+              },
+            },
+            scales: {
+              x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+              y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+            },
+            onClick(_, elements) {
+              if (!elements.length) return;
+              const index = elements[0].index;
+              const agent = agents[index].agent;
+              const current = state.chartFilter;
+              if (current && current.type === "agent" && current.value === agent) {
+                state.chartFilter = null;
+              } else {
+                state.chartFilter = { type: "agent", value: agent };
+              }
+              chartStatusEl.textContent = state.chartFilter
+                ? `${state.chartFilter.type}: ${state.chartFilter.value}`
+                : "Yok";
+              renderAll();
+            },
+          },
+        });
+
+        // Platform chart
+        destroyChart(platformChart);
+        const ctxPlatform = document.getElementById("platformChart").getContext("2d");
+        platformChart = new Chart(ctxPlatform, {
+          type: "pie",
+          data: {
+            labels: platforms.map((p) => p.platform),
+            datasets: [
+              {
+                data: platforms.map((p) => p.value),
+                backgroundColor: platforms.map(
+                  (p) => PLATFORM_COLORS[p.platform] || "#6366f1"
+                ),
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true },
+            },
+            onClick(_, elements) {
+              if (!elements.length) return;
+              const index = elements[0].index;
+              const platform = platforms[index].platform;
+              const current = state.chartFilter;
+              if (
+                current &&
+                current.type === "platform" &&
+                current.value === platform
+              ) {
+                state.chartFilter = null;
+              } else {
+                state.chartFilter = { type: "platform", value: platform };
+              }
+              chartStatusEl.textContent = state.chartFilter
+                ? `${state.chartFilter.type}: ${state.chartFilter.value}`
+                : "Yok";
+              renderAll();
+            },
+          },
+        });
+
+        // Platform legend
+        platformLegendEl.innerHTML = "";
+        platforms.forEach((p) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between gap-2";
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5">
+              <span class="h-2 w-2 rounded-full" style="background:${
+                PLATFORM_COLORS[p.platform]
+              }"></span>
+              <span>${p.platform}</span>
+            </div>
+            <span class="text-slate-400">${p.value}</span>`;
+          platformLegendEl.appendChild(row);
+        });
+
+        // Time chart
+        destroyChart(timeChart);
+        const ctxTime = document.getElementById("timeChart").getContext("2d");
+        timeChart = new Chart(ctxTime, {
+          type: "line",
+          data: {
+            labels: times.map((t) => t.label),
+            datasets: [
+              {
+                label: "Arama Sayısı",
+                data: times.map((t) => t.calls),
+                borderColor: "#38bdf8",
+                backgroundColor: "rgba(56,189,248,0.3)",
+                tension: 0.3,
+                pointRadius: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
+              tooltip: { enabled: true },
+            },
+            scales: {
+              x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+              y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+            },
+            onClick(_, elements) {
+              if (!elements.length) return;
+              const index = elements[0].index;
+              const hour = times[index].hour;
+              const current = state.chartFilter;
+              if (current && current.type === "hour" && current.value === hour) {
+                state.chartFilter = null;
+              } else {
+                state.chartFilter = { type: "hour", value: hour };
+              }
+              chartStatusEl.textContent = state.chartFilter
+                ? `${state.chartFilter.type}: ${state.chartFilter.value}`
+                : "Yok";
+              renderAll();
+            },
+          },
+        });
+      }
+
+      // -------- Table --------
+      function renderTable(filtered) {
+        tableBodyEl.innerHTML = "";
+        const followUpOverdueIds = new Set(
+          filtered
+            .filter(
+              (r) =>
+                r.leadStatus === "Follow Up" &&
+                diffInMinutes(r.createdAt, now) > 24 * 60
+            )
+            .map((r) => r.id)
+        );
+        rowCountTextEl.textContent = filtered.length;
+
+        filtered.forEach((row) => {
+          const tr = document.createElement("tr");
+          const sla =
+            row.assignedAt && row.callAt
+              ? diffInMinutes(row.assignedAt, row.callAt)
+              : null;
+          const slaBad = sla !== null && sla > 15;
+          const overdue = followUpOverdueIds.has(row.id);
+          tr.className =
+            "border-t border-slate-800/80 transition-colors " +
+            (overdue
+              ? "bg-red-950/40"
+              : "hover:bg-slate-900/50");
+
+          tr.innerHTML = `
+            <td class="whitespace-nowrap px-3 py-2 text-slate-300">#${row.id}</td>
+            <td class="max-w-[160px] truncate px-3 py-2 text-slate-100">
+              ${row.customerName}
+              <div class="mt-0.5 text-[10px] text-slate-500">${row.createdAtStr}</div>
+            </td>
+            <td class="px-3 py-2 text-slate-200">${row.agent}</td>
+            <td class="px-3 py-2 text-slate-200">${row.project}</td>
+            <td class="px-3 py-2">
+              <span
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+                style="background:${(PLATFORM_COLORS[row.platform] || "#64748b") +
+                  "22"};color:${PLATFORM_COLORS[row.platform] || "#64748b"}"
+              >
+                ${row.platform}
+              </span>
+            </td>
+            <td class="px-3 py-2">
+              <div class="text-slate-200">${row.assignedDateStr}</div>
+              <div class="text-[10px] text-slate-500">${row.assignedTimeStr}</div>
+            </td>
+            <td class="px-3 py-2">
+              <div class="text-slate-200">${row.callTimeStr}</div>
+              <div class="text-[10px] text-slate-500">${row.callStatus}</div>
+            </td>
+            <td class="px-3 py-2">
+              ${
+                sla !== null
+                  ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      slaBad
+                        ? "bg-red-500/20 text-red-200"
+                        : "bg-emerald-500/20 text-emerald-200"
+                    }">${sla} dk</span>`
+                  : `<span class="text-[11px] text-slate-500">-</span>`
+              }
+            </td>
+            <td class="px-3 py-2">
+              <div class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                row.leadStatus === "Satış"
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : row.leadStatus === "Randevu"
+                  ? "bg-sky-500/20 text-sky-200"
+                  : row.leadStatus === "Follow Up"
+                  ? overdue
+                    ? "bg-red-500/20 text-red-200"
+                    : "bg-amber-500/20 text-amber-200"
+                  : "bg-slate-700/50 text-slate-200"
+              }">
+                ${row.leadStatus}
+              </div>
+            </td>
+            <td class="px-3 py-2 text-slate-300">${
+              row.rejectionReason || '<span class="text-slate-500">-</span>'
+            }</td>
+            <td class="px-3 py-2 text-center">
+              <button
+                class="inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
+                  row.hasRecording
+                    ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
+                    : "border-slate-700/80 bg-slate-900 text-slate-500"
+                }"
+                title="${
+                  row.hasRecording
+                    ? "Ses kaydını dinle (simülasyon)"
+                    : "Ses kaydı yok"
+                }"
+              >
+                &#127908;
+              </button>
+            </td>
+            <td class="px-3 py-2 text-center">
+              <button
+                class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900 text-[11px] text-slate-300 hover:border-primary-500/60 hover:text-primary-200"
+                title="${row.notes}"
+              >
+                &#9998;
+              </button>
+            </td>
+          `;
+          tableBodyEl.appendChild(tr);
+        });
+      }
+
+      // -------- Render All --------
+      function renderAll() {
+        const filtered = applyFilters();
+        renderKpiCards(filtered);
+        renderCharts(filtered);
+        renderTable(filtered);
+        summaryBadgeEl.classList.remove("hidden");
+        summaryTextEl.textContent = formatDate(MOCK_DATA[0].createdAt);
+      }
+
+      // -------- Event Listeners --------
+      agentFilterEl.addEventListener("change", () => {
+        state.agent = agentFilterEl.value;
+        renderAll();
+      });
+      projectFilterEl.addEventListener("change", () => {
+        state.project = projectFilterEl.value;
+        renderAll();
+      });
+      platformFilterEl.addEventListener("change", () => {
+        state.platform = platformFilterEl.value;
+        renderAll();
+      });
+      searchInputEl.addEventListener("input", () => {
+        state.search = searchInputEl.value;
+        renderAll();
+      });
+      resetFiltersBtn.addEventListener("click", () => {
+        state.agent = "ALL";
+        state.project = "ALL";
+        state.platform = "ALL";
+        state.funnelStage = null;
+        state.chartFilter = null;
+        agentFilterEl.value = "ALL";
+        projectFilterEl.value = "ALL";
+        platformFilterEl.value = "ALL";
+        funnelStatusEl.textContent = "Tümü";
+        chartStatusEl.textContent = "Yok";
+        searchInputEl.value = "";
+        state.search = "";
+        renderAll();
+      });
+      resetDrilldownBtn.addEventListener("click", () => {
+        state.funnelStage = null;
+        state.chartFilter = null;
+        funnelStatusEl.textContent = "Tümü";
+        chartStatusEl.textContent = "Yok";
+        renderAll();
+      });
+
+      // -------- Init --------
+      renderAll();
+    </script>
+  </body>
+</html>
