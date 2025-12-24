@@ -28,1042 +28,182 @@
         },
       };
     </script>
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Recharts -->
-    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
-    <link rel="icon" href="images/mountain-landscape.jpg" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="bg-slate-950 text-slate-50 antialiased">
-    <div id="root"></div>
+    <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div class="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div
+              class="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400 ring-1 ring-slate-700/70"
+            >
+              <span
+                class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.45)]"
+              ></span>
+              Sales Machine · Canlı İzleme
+            </div>
+            <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+              Çağrı Merkezi Performans &amp; Satış Yönetimi
+            </h1>
+            <p class="mt-1 text-sm text-slate-400">
+              Temsilci, kanal ve proje bazında gerçek zamanlı
+              <span class="font-medium text-primary-200">Sales Machine</span> görünürlüğü.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              id="resetFiltersBtn"
+              class="rounded-2xl border border-slate-700/70 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.8)] transition hover:border-slate-500/80 hover:bg-slate-800/80"
+            >
+              Filtreleri Temizle
+            </button>
+            <div
+              id="summaryBadge"
+              class="hidden items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 ring-1 ring-slate-700/70 shadow-[0_12px_40px_rgba(15,23,42,0.9)] sm:flex"
+            >
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <span id="summaryText">Bugün</span>
+            </div>
+          </div>
+        </header>
 
-    <script type="text/babel" data-presets="es2015,react">
-      const {
-        BarChart,
-        Bar,
-        XAxis,
-        YAxis,
-        CartesianGrid,
-        Tooltip,
-        Legend,
-        ResponsiveContainer,
-        PieChart,
-        Pie,
-        Cell,
-        LineChart,
-        Line,
-} = window.Recharts;
+        <!-- KPI Cards -->
+        <section class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="kpiCards"></section>
 
-      const AGENTS = ["Temsilci 1", "Temsilci 2", "Temsilci 3"];
-      const PLATFORMS = ["FB", "IG", "Web"];
-      const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
-
-      const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
-      const LEAD_STATUS = ["Follow Up", "Randevu", "Satış", "Ret"];
-
-      const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
-
-      const PLATFORM_COLORS = {
-        FB: "#3b82f6",
-        IG: "#ec4899",
-        Web: "#22c55e",
-      };
-
-      function randomChoice(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-      }
-
-      function addMinutes(date, minutes) {
-        return new Date(date.getTime() + minutes * 60000);
-      }
-
-      function formatDate(date) {
-        return date.toISOString().slice(0, 10);
-      }
-
-      function formatTime(date) {
-        return date.toTimeString().slice(0, 5);
-      }
-
-      function diffInMinutes(a, b) {
-        return Math.round((b.getTime() - a.getTime()) / 60000);
-      }
-
-      function createMockData() {
-        const base = new Date();
-        const data = [];
-        for (let i = 1; i <= 24; i++) {
-          const createdAt = new Date(
-            base.getFullYear(),
-            base.getMonth(),
-            base.getDate() - (i % 3),
-            9 + (i % 8),
-            (i * 7) % 60
-          );
-
-          const agent = randomChoice(AGENTS);
-          const platform = randomChoice(PLATFORMS);
-          const project = randomChoice(PROJECTS);
-
-          const assignedAt = addMinutes(createdAt, 5 + (i % 20));
-          const callAt = addMinutes(assignedAt, (i * 3) % 40);
-
-          const callStatus = randomChoice(CALL_STATUS);
-          let leadStatus = randomChoice(LEAD_STATUS);
-          if (callStatus.startsWith("No Response")) {
-            leadStatus = randomChoice(["Follow Up", "Ret"]);
-          }
-
-          let rejectionReason = "";
-          if (leadStatus === "Ret") {
-            rejectionReason = randomChoice(REJECTION_REASONS);
-          }
-
-          const callDuration = callStatus === "Arandı" ? 60 + (i * 13) % 300 : 0;
-
-          data.push({
-            id: i,
-            createdAt,
-            createdAtStr: formatDate(createdAt),
-            agent,
-            assignedAt,
-            assignedDateStr: formatDate(assignedAt),
-            assignedTimeStr: formatTime(assignedAt),
-            customerName: `Müşteri ${i}`,
-            platform,
-            project,
-            callAt,
-            callTimeStr: formatTime(callAt),
-            callStatus,
-            callDuration,
-            leadStatus,
-            rejectionReason,
-            notes:
-              leadStatus === "Satış"
-                ? "Satış başarılı, sözleşme gönderildi."
-                : leadStatus === "Randevu"
-                ? "Showroom randevusu ayarlandı."
-                : leadStatus === "Follow Up"
-                ? "Müşteri tekrar aranacak."
-                : rejectionReason
-                ? `Ret nedeni: ${rejectionReason}.`
-                : "Genel not yok.",
-            hasRecording: callDuration > 0,
-          });
-        }
-        return data;
-      }
-
-      const MOCK_DATA = createMockData();
-
-      function KpiCard({ label, value, helper, tone = "neutral" }) {
-        const toneClasses =
-          tone === "danger"
-            ? "bg-red-500/10 text-red-300 ring-red-500/40"
-            : tone === "success"
-            ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/40"
-            : "bg-primary-500/10 text-primary-200 ring-primary-500/40";
-
-        return (
-          <div className="rounded-3xl bg-slate-900/80 ring-1 ring-slate-700/60 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-3">
+        <!-- Filters + Drilldown Status -->
+        <section class="mb-6 flex flex-col gap-4 lg:flex-row">
+          <!-- Filters -->
+          <div
+            class="flex-1 rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                  {label}
-                </p>
-                <p className={`mt-2 text-2xl font-semibold ${toneClasses.split(" ")[1]}`}>
-                  {value}
-                </p>
+                <h2 class="text-sm font-semibold text-slate-50">Filtreler</h2>
+                <p class="text-xs text-slate-400">Temsilci, proje ve platform bazlı görünüm.</p>
+              </div>
+              <button
+                id="resetDrilldownBtn"
+                class="inline-flex items-center gap-1 rounded-2xl border border-slate-700/80 px-3 py-1 text-[11px] font-medium text-slate-200 transition hover:border-slate-500/80 hover:bg-slate-800/80"
+              >
+                <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                Drill-down sıfırla
+              </button>
+            </div>
+            <div class="grid gap-3 md:grid-cols-3">
+              <div>
+                <label
+                  class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+                  >Temsilci</label
+                >
+                <select
+                  id="agentFilter"
+                  class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="ALL">Tümü</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+                  >Proje</label
+                >
+                <select
+                  id="projectFilter"
+                  class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="ALL">Tümü</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+                  >Platform</label
+                >
+                <select
+                  id="platformFilter"
+                  class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                >
+                  <option value="ALL">Tümü</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-4">
+              <label
+                class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+                >Hızlı Arama</label
+              >
+              <div class="relative">
+                <input
+                  id="searchInput"
+                  placeholder="Müşteri, ID, temsilci, proje..."
+                  class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 py-2 pl-8 pr-3 text-xs text-slate-100 placeholder:text-slate-500 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                />
+                <span
+                  class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                  >
+                    <circle cx="11" cy="11" r="6" />
+                    <line x1="16" y1="16" x2="21" y2="21" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drilldown Status -->
+          <div
+            class="w-full rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:max-w-sm"
+          >
+            <h2 class="mb-3 text-sm font-semibold text-slate-50">Drill-down Durumu</h2>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Funnel</span>
+                <span
+                  id="funnelStatus"
+                  class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
+                >
+                  Tümü
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Grafik Seçimi</span>
+                <span
+                  id="chartStatus"
+                  class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
+                >
+                  Yok
+                </span>
               </div>
               <div
-                className={`inline-flex items-center justify-center rounded-2xl px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] ${toneClasses}`}
+                class="mt-3 rounded-2xl bg-gradient-to-r from-primary-500/20 via-emerald-500/10 to-sky-500/20 p-3 text-[11px] text-slate-100 ring-1 ring-primary-500/40"
               >
-                {helper}
+                Grafiklerin üzerine tıklayarak tabloyu filtreleyebilirsiniz.
+                <span class="font-medium text-primary-200">
+                  Tek tık = filtrele, butonlar = sıfırla.
+                </span>
               </div>
             </div>
           </div>
-        );
-      }
+        </section>
 
-      function SalesMachineDashboard() {
-        const [agentFilter, setAgentFilter] = React.useState("Tümü");
-        const [projectFilter, setProjectFilter] = React.useState("Tümü");
-        const [platformFilter, setPlatformFilter] = React.useState("Tümü");
-        const [funnelStageFilter, setFunnelStageFilter] = React.useState(null);
-        const [selectedChartFilter, setSelectedChartFilter] = React.useState(null);
-        const [search, setSearch] = React.useState("");
-
-        const filteredData = React.useMemo(() => {
-          return MOCK_DATA.filter((row) => {
-            if (agentFilter !== "Tümü" && row.agent !== agentFilter) return false;
-            if (projectFilter !== "Tümü" && row.project !== projectFilter) return false;
-            if (platformFilter !== "Tümü" && row.platform !== platformFilter) return false;
-            if (funnelStageFilter) {
-              if (funnelStageFilter === "Lead Girişi") {
-              } else if (funnelStageFilter === "Atanmış") {
-                if (!row.assignedAt) return false;
-              } else if (funnelStageFilter === "Arandı") {
-                if (row.callStatus !== "Arandı") return false;
-              } else if (funnelStageFilter === "Randevu") {
-                if (row.leadStatus !== "Randevu") return false;
-              } else if (funnelStageFilter === "Satış") {
-                if (row.leadStatus !== "Satış") return false;
-              }
-            }
-            if (selectedChartFilter?.type === "agent" && row.agent !== selectedChartFilter.value) {
-              return false;
-            }
-            if (
-              selectedChartFilter?.type === "platform" &&
-              row.platform !== selectedChartFilter.value
-            ) {
-              return false;
-            }
-            if (
-              selectedChartFilter?.type === "hour" &&
-              row.callAt &&
-              row.callAt.getHours() !== selectedChartFilter.value
-            ) {
-              return false;
-            }
-
-            if (search.trim()) {
-              const q = search.toLowerCase();
-              const target = `${row.customerName} ${row.id} ${row.agent} ${row.project} ${row.platform}`.toLowerCase();
-              if (!target.includes(q)) return false;
-            }
-
-            return true;
-          });
-        }, [agentFilter, projectFilter, platformFilter, funnelStageFilter, selectedChartFilter, search]);
-
-        const slaStats = React.useMemo(() => {
-          let sumMinutes = 0;
-          let count = 0;
-          let over15 = 0;
-          filteredData.forEach((row) => {
-            if (row.assignedAt && row.callAt) {
-              const diff = diffInMinutes(row.assignedAt, row.callAt);
-              sumMinutes += diff;
-              count += 1;
-              if (diff > 15) over15 += 1;
-            }
-          });
-          return {
-            avg: count ? (sumMinutes / count).toFixed(1) : "-",
-            overRate: count ? Math.round((over15 / count) * 100) : 0,
-          };
-        }, [filteredData]);
-
-        const conversionStats = React.useMemo(() => {
-          const total = filteredData.length;
-          const sales = filteredData.filter((r) => r.leadStatus === "Satış").length;
-          const ratio = total ? ((sales / total) * 100).toFixed(1) + "%" : "-";
-          return { total, sales, ratio };
-        }, [filteredData]);
-
-        const callStats = React.useMemo(() => {
-          const totalCalls = filteredData.filter((r) => r.callStatus).length;
-          const successfulCalls = filteredData.filter((r) => r.callStatus === "Arandı").length;
-          const successRate = totalCalls
-            ? ((successfulCalls / totalCalls) * 100).toFixed(1) + "%"
-            : "-";
-          return { totalCalls, successfulCalls, successRate };
-        }, [filteredData]);
-
-        const lostLeads = React.useMemo(
-          () =>
-            filteredData.filter(
-              (r) => r.leadStatus === "Ret" || r.callStatus?.startsWith("No Response 3")
-            ).length,
-          [filteredData]
-        );
-
-        const funnelData = React.useMemo(() => {
-          const total = filteredData.length;
-          const assigned = filteredData.filter((r) => r.assignedAt).length;
-          const called = filteredData.filter((r) => r.callStatus === "Arandı").length;
-          const appointment = filteredData.filter((r) => r.leadStatus === "Randevu").length;
-          const sales = filteredData.filter((r) => r.leadStatus === "Satış").length;
-          return [
-            { stage: "Lead Girişi", value: total },
-            { stage: "Atanmış", value: assigned },
-            { stage: "Arandı", value: called },
-            { stage: "Randevu", value: appointment },
-            { stage: "Satış", value: sales },
-          ];
-        }, [filteredData]);
-
-        const agentPerformance = React.useMemo(() => {
-          return AGENTS.map((agent) => {
-            const rows = filteredData.filter((r) => r.agent === agent);
-            const totalCalls = rows.filter((r) => r.callStatus).length;
-            const appointments = rows.filter((r) => r.leadStatus === "Randevu").length;
-            const sales = rows.filter((r) => r.leadStatus === "Satış").length;
-            return {
-              agent,
-              totalCalls,
-              appointments,
-              sales,
-            };
-          });
-        }, [filteredData]);
-
-        const platformDistribution = React.useMemo(() => {
-          return PLATFORMS.map((p) => ({
-            platform: p,
-            value: filteredData.filter((r) => r.platform === p).length,
-          })).filter((d) => d.value > 0);
-        }, [filteredData]);
-
-        const timeSeries = React.useMemo(() => {
-          const buckets = {};
-          filteredData.forEach((r) => {
-            if (!r.callAt) return;
-            const h = r.callAt.getHours();
-            const label = `${String(h).padStart(2, "0")}:00`;
-            if (!buckets[h]) {
-              buckets[h] = { hour: h, label, calls: 0 };
-            }
-            buckets[h].calls += 1;
-          });
-          return Object.values(buckets).sort((a, b) => a.hour - b.hour);
-        }, [filteredData]);
-
-        const now = new Date();
-        const followUpOverdueIds = React.useMemo(
-          () =>
-            new Set(
-              filteredData
-                .filter(
-                  (r) =>
-                    r.leadStatus === "Follow Up" &&
-                    diffInMinutes(r.createdAt, now) > 24 * 60
-                )
-                .map((r) => r.id)
-            ),
-          [filteredData, now]
-        );
-
-        const resetDrillDown = () => {
-          setFunnelStageFilter(null);
-          setSelectedChartFilter(null);
-        };
-
-        const [activeRowId, setActiveRowId] = React.useState(null);
-
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-50">
-            <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-              <header className="mb-6 flex items-center justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400 ring-1 ring-slate-700/70">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.45)]" />
-                    Sales Machine · Canlı İzleme
-                  </div>
-                  <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-                    Çağrı Merkezi Performans &amp; Satış Yönetimi
-                  </h1>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Temsilci, kanal ve proje bazında gerçek zamanlı <span className="font-medium text-primary-200">Sales Machine</span> görünürlüğü.
-                  </p>
-                </div>
-                <div className="hidden items-center gap-3 sm:flex">
-                  <button
-                    onClick={resetDrillDown}
-                    className="rounded-2xl border border-slate-700/70 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.8)] hover:border-slate-500/80 hover:bg-slate-800/80 transition"
-                  >
-                    Filtreleri Temizle
-                  </button>
-                  <div className="flex items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 ring-1 ring-slate-700/70 shadow-[0_12px_40px_rgba(15,23,42,0.9)]">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    Bugün · {MOCK_DATA[0]?.createdAtStr}
-                  </div>
-                </div>
-              </header>
-
-              <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <KpiCard
-                  label="Ort. Lead Yanıtlama Hızı (SLA)"
-                  value={slaStats.avg === "-" ? "-" : `${slaStats.avg} dk`}
-                  helper={
-                    slaStats.avg === "-" ? "Yeterli veri yok" : `>%15 SLA: ${slaStats.overRate}%`
-                  }
-                  tone={slaStats.avg !== "-" && parseFloat(slaStats.avg) > 15 ? "danger" : "success"}
-                />
-                <KpiCard
-                  label="Genel Dönüşüm Oranı"
-                  value={conversionStats.ratio}
-                  helper={`${conversionStats.sales} satış / ${conversionStats.total} lead`}
-                  tone="neutral"
-                />
-                <KpiCard
-                  label="Toplam Arama & Başarılı Arama"
-                  value={
-                    callStats.totalCalls
-                      ? `${callStats.totalCalls} arama`
-                      : "Veri yok"
-                  }
-                  helper={`Başarılı % ${callStats.successRate}`}
-                  tone="success"
-                />
-                <KpiCard
-                  label="Kayıp / Niteliksiz Lead"
-                  value={lostLeads}
-                  helper="Ret + 3. no-response"
-                  tone={lostLeads > 0 ? "danger" : "neutral"}
-                />
-              </section>
-
-              <section className="mb-6 flex flex-col gap-4 lg:flex-row">
-                <div className="flex-1 rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-50">
-                        Filtreler
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        Temsilci, proje ve platform bazlı görünüm.
-                      </p>
-                    </div>
-                    <button
-                      onClick={resetDrillDown}
-                      className="inline-flex items-center gap-1 rounded-2xl border border-slate-700/80 px-3 py-1 text-[11px] font-medium text-slate-200 hover:border-slate-500/80 hover:bg-slate-800/80 transition"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                      Drill-down sıfırla
-                    </button>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                        Temsilci
-                      </label>
-                      <select
-                        value={agentFilter}
-                        onChange={(e) => setAgentFilter(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      >
-                        <option>Tümü</option>
-                        {AGENTS.map((a) => (
-                          <option key={a}>{a}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                        Proje
-                      </label>
-                      <select
-                        value={projectFilter}
-                        onChange={(e) => setProjectFilter(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      >
-                        <option>Tümü</option>
-                        {PROJECTS.map((p) => (
-                          <option key={p}>{p}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                        Platform
-                      </label>
-                      <select
-                        value={platformFilter}
-                        onChange={(e) => setPlatformFilter(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      >
-                        <option>Tümü</option>
-                        {PLATFORMS.map((p) => (
-                          <option key={p}>{p}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <label className="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-                      Hızlı Arama
-                    </label>
-                    <div className="relative">
-                      <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Müşteri, ID, temsilci, proje..."
-                        className="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 py-2 pl-8 pr-3 text-xs text-slate-100 placeholder:text-slate-500 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      />
-                      <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                        >
-                          <circle cx="11" cy="11" r="6" />
-                          <line x1="16" y1="16" x2="21" y2="21" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-full rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:max-w-sm">
-                  <h2 className="mb-3 text-sm font-semibold text-slate-50">
-                    Drill-down Durumu
-                  </h2>
-                  <div className="space-y-2 text-xs text-slate-300">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Funnel</span>
-                      <span className="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]">
-                        {funnelStageFilter ?? "Tümü"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Grafik Seçimi</span>
-                      <span className="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]">
-                        {selectedChartFilter
-                          ? `${selectedChartFilter.type}: ${selectedChartFilter.value}`
-                          : "Yok"}
-                      </span>
-                    </div>
-                    <div className="mt-3 rounded-2xl bg-gradient-to-r from-primary-500/20 via-emerald-500/10 to-sky-500/20 p-3 text-[11px] text-slate-100 ring-1 ring-primary-500/40">
-                      Grafiklerin üzerine tıklayarak tabloyu filtreleyebilirsiniz.{" "}
-                      <span className="font-medium text-primary-200">
-                        Tek tık = filtrele, sağ üstteki buton = sıfırla.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="grid gap-4 lg:grid-cols-2">
-                <div className="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-50">
-                        Sales Funnel
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        Lead girişi &gt; atanma &gt; arama &gt; randevu &gt; satış.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={funnelData}
-                        layout="vertical"
-                        margin={{ top: 10, right: 20, bottom: 0, left: 40 }}
-                        barCategoryGap={12}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis type="number" stroke="#64748b" />
-                        <YAxis
-                          dataKey="stage"
-                          type="category"
-                          stroke="#64748b"
-                          tick={{ fontSize: 11 }}
-                        />
-                        <Tooltip
-                          cursor={{ fill: "rgba(15,23,42,0.7)" }}
-                          contentStyle={{
-                            background: "#020617",
-                            borderRadius: 16,
-                            border: "1px solid #1e293b",
-                            padding: 10,
-                            fontSize: 12,
-                          }}
-                          labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
-                        />
-                        <Bar
-                          dataKey="value"
-                          radius={[0, 12, 12, 0]}
-                          onClick={(data) => {
-                            setFunnelStageFilter(
-                              funnelStageFilter === data.stage ? null : data.stage
-                            );
-                          }}
-                        >
-                          {funnelData.map((entry, index) => {
-                            const active = funnelStageFilter === entry.stage;
-                            const baseColor =
-                              index === 0
-                                ? "#3b82f6"
-                                : index === 4
-                                ? "#22c55e"
-                                : "#6366f1";
-                            return (
-                              <Cell
-                                key={entry.stage}
-                                fill={
-                                  active
-                                    ? baseColor
-                                    : baseColor + "33"
-                                }
-                              />
-                            );
-                          })}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-50">
-                        Temsilci Performansı
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        Toplam arama, randevu ve satış sayısı.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={agentPerformance}
-                        margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
-                        barGap={6}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis
-                          dataKey="agent"
-                          stroke="#64748b"
-                          tick={{ fontSize: 11 }}
-                        />
-                        <YAxis stroke="#64748b" />
-                        <Tooltip
-                          cursor={{ fill: "rgba(15,23,42,0.7)" }}
-                          contentStyle={{
-                            background: "#020617",
-                            borderRadius: 16,
-                            border: "1px solid #1e293b",
-                            padding: 10,
-                            fontSize: 12,
-                          }}
-                          labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
-                        />
-                        <Legend
-                          wrapperStyle={{ fontSize: 11 }}
-                          formatter={(v) => (
-                            <span style={{ color: "#cbd5f5" }}>{v}</span>
-                          )}
-                        />
-                        <Bar
-                          dataKey="totalCalls"
-                          name="Toplam Arama"
-                          fill="#3b82f6"
-                          radius={[8, 8, 0, 0]}
-                          onClick={(data) =>
-                            setSelectedChartFilter((current) =>
-                              current?.type === "agent" &&
-                              current?.value === data.agent
-                                ? null
-                                : { type: "agent", value: data.agent }
-                            )
-                          }
-                        />
-                        <Bar
-                          dataKey="appointments"
-                          name="Randevu"
-                          fill="#22c55e"
-                          radius={[8, 8, 0, 0]}
-                          onClick={(data) =>
-                            setSelectedChartFilter((current) =>
-                              current?.type === "agent" &&
-                              current?.value === data.agent
-                                ? null
-                                : { type: "agent", value: data.agent }
-                            )
-                          }
-                        />
-                        <Bar
-                          dataKey="sales"
-                          name="Satış"
-                          fill="#a855f7"
-                          radius={[8, 8, 0, 0]}
-                          onClick={(data) =>
-                            setSelectedChartFilter((current) =>
-                              current?.type === "agent" &&
-                              current?.value === data.agent
-                                ? null
-                                : { type: "agent", value: data.agent }
-                            )
-                          }
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-50">
-                        Platform Dağılımı
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        Hangi reklam kanalı ne kadar lead üretiyor?
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex h-64 items-center gap-4">
-                    <div className="h-full flex-1">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Tooltip
-                            contentStyle={{
-                              background: "#020617",
-                              borderRadius: 16,
-                              border: "1px solid #1e293b",
-                              padding: 10,
-                              fontSize: 12,
-                            }}
-                            labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
-                          />
-                          <Pie
-                            data={platformDistribution}
-                            dataKey="value"
-                            nameKey="platform"
-                            innerRadius="60%"
-                            outerRadius="85%"
-                            paddingAngle={2}
-                            onClick={(data) =>
-                              setSelectedChartFilter((current) =>
-                                current?.type === "platform" &&
-                                current?.value === data.platform
-                                  ? null
-                                  : { type: "platform", value: data.platform }
-                              )
-                            }
-                          >
-                            {platformDistribution.map((entry) => (
-                              <Cell
-                                key={entry.platform}
-                                fill={PLATFORM_COLORS[entry.platform] || "#6366f1"}
-                              />
-                            ))}
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="w-32 space-y-2 text-xs text-slate-300">
-                      {platformDistribution.map((p) => (
-                        <div
-                          key={p.platform}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="h-2 w-2 rounded-full"
-                              style={{ background: PLATFORM_COLORS[p.platform] }}
-                            />
-                            <span>{p.platform}</span>
-                          </div>
-                          <span className="text-slate-400">{p.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="text-sm font-semibold text-slate-50">
-                        Zaman Analizi
-                      </h2>
-                      <p className="text-xs text-slate-400">
-                        Gün içi arama yoğunluğu (saat bazında).
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={timeSeries}
-                        margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis
-                          dataKey="label"
-                          stroke="#64748b"
-                          tick={{ fontSize: 11 }}
-                        />
-                        <YAxis stroke="#64748b" />
-                        <Tooltip
-                          cursor={{ stroke: "#6366f1", strokeWidth: 1 }}
-                          contentStyle={{
-                            background: "#020617",
-                            borderRadius: 16,
-                            border: "1px solid #1e293b",
-                            padding: 10,
-                            fontSize: 12,
-                          }}
-                          labelStyle={{ color: "#e5e7eb", marginBottom: 4 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="calls"
-                          stroke="#38bdf8"
-                          strokeWidth={2}
-                          dot={{ r: 3, strokeWidth: 1 }}
-                          activeDot={{
-                            r: 5,
-                            strokeWidth: 2,
-                            stroke: "#f97316",
-                          }}
-                          onClick={(data) =>
-                            setSelectedChartFilter((current) =>
-                              current?.type === "hour" &&
-                              current?.value === data.hour
-                                ? null
-                                : { type: "hour", value: data.hour }
-                            )
-                          }
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </section>
-
-              <section className="mt-6 flex-1 rounded-3xl bg-slate-950/70 p-3 ring-1 ring-slate-800/80 shadow-[0_24px_80px_rgba(15,23,42,1)] backdrop-blur-2xl">
-                <div className="mb-2 flex items-center justify-between gap-3 px-1">
-                  <div>
-                    <h2 className="text-sm font-semibold text-slate-50">
-                      Lead Listeleme &amp; Drill-down
-                    </h2>
-                    <p className="text-xs text-slate-400">
-                      {filteredData.length} kayıt görüntüleniyor. Satır üzerine
-                      gelerek ek aksiyonları ortaya çıkarın.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-red-500" />
-                      <span>Geçmiş follow-up</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-amber-400" />
-                      <span>&gt;15dk SLA</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="relative max-h-[430px] overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/90">
-                  <div className="scrollbar-thin scrollbar-thumb-slate-700 max-h-[430px] overflow-auto">
-                    <table className="min-w-full text-left text-xs">
-                      <thead className="sticky top-0 z-10 bg-slate-950/95 backdrop-blur">
-                        <tr>
-                          <th className="px-3 py-2 font-medium text-slate-400">ID</th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Müşteri
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Temsilci
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Proje
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Platform
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Atanma
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Arama
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            SLA (dk)
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Durum
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Ret Nedeni
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Ses
-                          </th>
-                          <th className="px-3 py-2 font-medium text-slate-400">
-                            Not
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredData.map((row) => {
-                          const sla =
-                            row.assignedAt && row.callAt
-                              ? diffInMinutes(row.assignedAt, row.callAt)
-                              : null;
-                          const slaBad = sla !== null && sla > 15;
-                          const overdue = followUpOverdueIds.has(row.id);
-                          const isActive = activeRowId === row.id;
-                          return (
-                            <tr
-                              key={row.id}
-                              onMouseEnter={() => setActiveRowId(row.id)}
-                              onMouseLeave={() => setActiveRowId((cur) =>
-                                cur === row.id ? null : cur
-                              )}
-                              className={`border-t border-slate-800/80 transition-colors ${
-                                overdue
-                                  ? "bg-red-950/40"
-                                  : isActive
-                                  ? "bg-slate-900/80"
-                                  : "hover:bg-slate-900/50"
-                              }`}
-                            >
-                              <td className="whitespace-nowrap px-3 py-2 text-slate-300">
-                                #{row.id}
-                              </td>
-                              <td className="max-w-[160px] truncate px-3 py-2 text-slate-100">
-                                {row.customerName}
-                                <div className="mt-0.5 text-[10px] text-slate-500">
-                                  {row.createdAtStr}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2 text-slate-200">
-                                {row.agent}
-                              </td>
-                              <td className="px-3 py-2 text-slate-200">
-                                {row.project}
-                              </td>
-                              <td className="px-3 py-2">
-                                <span
-                                  className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
-                                  style={{
-                                    background:
-                                      PLATFORM_COLORS[row.platform] + "22",
-                                    color: PLATFORM_COLORS[row.platform],
-                                  }}
-                                >
-                                  {row.platform}
-                                </span>
-                              </td>
-                              <td className="px-3 py-2">
-                                <div className="text-slate-200">
-                                  {row.assignedDateStr}
-                                </div>
-                                <div className="text-[10px] text-slate-500">
-                                  {row.assignedTimeStr}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2">
-                                <div className="text-slate-200">
-                                  {row.callTimeStr}
-                                </div>
-                                <div className="text-[10px] text-slate-500">
-                                  {row.callStatus}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2">
-                                {sla !== null ? (
-                                  <span
-                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                                      slaBad
-                                        ? "bg-red-500/20 text-red-200"
-                                        : "bg-emerald-500/20 text-emerald-200"
-                                    }`}
-                                  >
-                                    {sla} dk
-                                  </span>
-                                ) : (
-                                  <span className="text-[11px] text-slate-500">
-                                    -
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-3 py-2">
-                                <div
-                                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                                    row.leadStatus === "Satış"
-                                      ? "bg-emerald-500/20 text-emerald-200"
-                                      : row.leadStatus === "Randevu"
-                                      ? "bg-sky-500/20 text-sky-200"
-                                      : row.leadStatus === "Follow Up"
-                                      ? overdue
-                                        ? "bg-red-500/20 text-red-200"
-                                        : "bg-amber-500/20 text-amber-200"
-                                      : "bg-slate-700/50 text-slate-200"
-                                  }`}
-                                >
-                                  {row.leadStatus}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2 text-slate-300">
-                                {row.rejectionReason || (
-                                  <span className="text-slate-500">-</span>
-                                )}
-                              </td>
-                              <td className="px-3 py-2 text-center">
-                                <button
-                                  className={`inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
-                                    row.hasRecording
-                                      ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
-                                      : "border-slate-700/80 bg-slate-900 text-slate-500"
-                                  }`}
-                                  title={
-                                    row.hasRecording
-                                      ? "Ses kaydını dinle (simülasyon)"
-                                      : "Ses kaydı yok"
-                                  }
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    className="h-3.5 w-3.5"
-                                    fill="currentColor"
-                                  >
-                                    <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 1 0 6 0V6a3 3 0 0 0-3-3z" />
-                                    <path d="M19 11a1 1 0 1 0-2 0 5 5 0 0 1-10 0 1 1 0 0 0-2 0 7 7 0 0 0 6 6.92V20H8a1 1 0 0 0 0 2h8a1 1 0 1 0 0-2h-3v-2.08A7 7 0 0 0 19 11z" />
-                                  </svg>
-                                </button>
-                              </td>
-                              <td className="px-3 py-2 text-center">
-                                <div className="flex items-center justify-center">
-                                  <button
-                                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900 text-[11px] text-slate-300 hover:border-primary-500/60 hover:text-primary-200"
-                                    title={row.notes}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      viewBox="0 0 24 24"
-                                      className="h-3.5 w-3.5"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="1.6"
-                                    >
-                                      <path d="M6 4h9l3 3v13H6z" />
-                                      <path d="M9 9h6M9 13h4" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-        );
-      }
-
-      const rootElement = document.getElementById("root");
-      const root = ReactDOM.createRoot(rootElement);
-      root.render(<SalesMachineDashboard />);
-    </script>
-  </body>
-</html>
+        <!-- Charts -->
+        <section class="grid gap-4 lg:grid-cols-2">
+          <!-- Sales Funnel -->
+          <div
+            class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-50">Sales Funnel</h2>
+                <p class="text-xs text-slate-400">
+                  Lead girişi &gt;
