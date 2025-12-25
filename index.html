@@ -195,6 +195,24 @@ Tek tık = filtrele, butonlar = sıfırla.
 </div>
 </div>
 </div>
+          <!-- Çağrı Süreleri -->
+          <div
+            class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:col-span-2"
+          >
+            <div class="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-semibold text-slate-50">Çağrı Süreleri</h2>
+                <p class="text-xs text-slate-400">
+                  1 dakika altı, 1–2 dk, 2–5 dk ve 5+ dakikalık çağrı dağılımı.
+                </p>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="durationChart"></canvas>
+            </div>
+          </div>
+
+    
 </section>
 
 <!-- Charts -->
@@ -698,7 +716,7 @@ kpiCardsEl.appendChild(card);
 }
 
 // -------- Charts --------
-let funnelChart, agentChart, platformChart, timeChart;
+let funnelChart, agentChart, platformChart, timeChart, durationChart;
 
 function buildFunnelData(filtered) {
 const total = filtered.length;
