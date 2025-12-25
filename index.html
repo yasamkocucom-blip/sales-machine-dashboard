@@ -324,6 +324,10 @@
                   <th class="px-3 py-2 font-medium text-slate-400">Arama</th>
                   <th class="px-3 py-2 font-medium text-slate-400">SLA (dk)</th>
                   <th class="px-3 py-2 font-medium text-slate-400">Durum</th>
+                  <th class="px-3 py-2 font-medium text-slate-400">Lead Score</th>
+                  <th class="px-3 py-2 font-medium text-slate-400">Temsilci Score</th>
+                  <th class="px-3 py-2 font-medium text-slate-400">Bütçe</th>
+                  <th class="px-3 py-2 font-medium text-slate-400">Randevu Süresi (dk)</th>
                   <th class="px-3 py-2 font-medium text-slate-400">Ret Nedeni</th>
                   <th class="px-3 py-2 font-medium text-slate-400">Ses</th>
                   <th class="px-3 py-2 font-medium text-slate-400">Not</th>
@@ -372,16 +376,21 @@
       return Math.round((b.getTime() - a.getTime()) / 60000);
     }
 
-    // 150 lead: 3 temsilciye eşit (50'şer) olacak şekilde otomatik veri
+    // 150 lead: 3 temsilciye 50'şer eşit dağılım + skorlar + bütçe + randevu süresi
     const MOCK_DATA = (() => {
       const base = new Date();
       const data = [];
       const totalLeads = 150;
 
+      const agentBaseScores = {
+        "Şükran Demir": 85,
+        "Sıla Babaliki": 88,
+        "Koray Yalçın": 82,
+      };
+
       for (let i = 0; i < totalLeads; i++) {
         const id = i + 1;
 
-        // Tarihleri son 3 güne yay
         const createdAt = new Date(
           base.getFullYear(),
           base.getMonth(),
@@ -390,7 +399,6 @@
           (i * 7) % 60
         );
 
-        // 3 temsilciye eşit dağılım
         const agent = AGENTS[i % AGENTS.length];
         const platform = PLATFORMS[i % PLATFORMS.length];
         const project = PROJECTS[i % PROJECTS.length];
@@ -401,10 +409,8 @@
         const callStatus = randomChoice(CALL_STATUS);
         let leadStatus;
         if (callStatus.startsWith("No Response")) {
-          // Ulaşılamayanların bir kısmı follow-up, bir kısmı ret
           leadStatus = randomChoice(["Follow Up", "Ret"]);
         } else {
-          // Arananların çoğu Randevu, bir kısmı Ret
           leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
         }
 
@@ -413,18 +419,32 @@
           rejectionReason = randomChoice(REJECTION_REASONS);
         }
 
-        // Çağrı süreleri: 20–600 sn arası, kovalara yay
         let callDuration = 0;
         if (callStatus === "Arandı") {
           const buckets = [
-            [20, 59],   // < 1 dk
-            [60, 119],  // 1–2 dk
-            [120, 299], // 2–5 dk
-            [300, 600], // 5+ dk
+            [20, 59],
+            [60, 119],
+            [120, 299],
+            [300, 600],
           ];
           const b = buckets[i % buckets.length];
           callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
         }
+
+        const budget = 500000 + (i % 15) * 100000;
+
+        let leadScore =
+          40 +
+          (budget / 1000000) * 15 +
+          (leadStatus === "Randevu" ? 25 : 0) -
+          (callStatus.startsWith("No Response") ? 10 : 0);
+        leadScore = Math.max(0, Math.min(100, Math.round(leadScore)));
+
+        let agentScore = (agentBaseScores[agent] || 80) + (i % 5) - 2;
+        agentScore = Math.max(60, Math.min(100, agentScore));
+
+        const randevuSuresi =
+          leadStatus === "Randevu" ? diffInMinutes(createdAt, callAt) : null;
 
         data.push({
           id,
@@ -452,6 +472,10 @@
               ? `Ret nedeni: ${rejectionReason}.`
               : "Genel not yok.",
           hasRecording: callDuration > 0,
+          leadScore,
+          agentScore,
+          budget,
+          randevuSuresi,
         });
       }
 
@@ -466,7 +490,7 @@
       project: "ALL",
       platform: "ALL",
       funnelStage: null,
-      chartFilter: null, // { type: "agent" | "platform" | "hour", value: ... }
+      chartFilter: null,
       search: "",
     };
 
@@ -509,7 +533,6 @@
         if (state.funnelStage) {
           const s = state.funnelStage;
           if (s === "Lead Girişi") {
-            // tüm leadler
           } else if (s === "Atanmış" && !row.assignedAt) return false;
           else if (s === "Arandı" && row.callStatus !== "Arandı") return false;
           else if (s === "Randevu" && row.leadStatus !== "Randevu") return false;
@@ -685,8 +708,8 @@
       };
 
       filtered.forEach((r) => {
-        const d = r.callDuration || 0; // saniye
-        if (d === 0) return;           // hiç aranmayanları hariç tut
+        const d = r.callDuration || 0;
+        if (d === 0) return;
         if (d < 60) buckets["<1 dk"]++;
         else if (d < 120) buckets["1–2 dk"]++;
         else if (d < 300) buckets["2–5 dk"]++;
@@ -920,10 +943,10 @@
               label: "Çağrı Sayısı",
               data: durations.values,
               backgroundColor: [
-                "rgba(56,189,248,0.7)",  // <1 dk
-                "rgba(34,197,94,0.7)",   // 1–2 dk
-                "rgba(250,204,21,0.8)",  // 2–5 dk
-                "rgba(239,68,68,0.8)",   // 5+ dk
+                "rgba(56,189,248,0.7)",
+                "rgba(34,197,94,0.7)",
+                "rgba(250,204,21,0.8)",
+                "rgba(239,68,68,0.8)",
               ],
             },
           ],
@@ -971,138 +994,105 @@
             : "hover:bg-slate-900/50");
 
         tr.innerHTML = `
-           <td class="whitespace-nowrap px-3 py-2 text-slate-300">#${row.id}</td>
-           <td class="max-w-[160px] truncate px-3 py-2 text-slate-100">
-             ${row.customerName}
-             <div class="mt-0.5 text-[10px] text-slate-500">${row.createdAtStr}</div>
-           </td>
-           <td class="px-3 py-2 text-slate-200">${row.agent}</td>
-           <td class="px-3 py-2 text-slate-200">${row.project}</td>
-           <td class="px-3 py-2">
-             <span
-               class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
-               style="background:${(PLATFORM_COLORS[row.platform] || "#64748b") +
-                 "22"};color:${PLATFORM_COLORS[row.platform] || "#64748b"}"
-             >
-               ${row.platform}
-             </span>
-           </td>
-           <td class="px-3 py-2">
-             <div class="text-slate-200">${row.assignedDateStr}</div>
-             <div class="text-[10px] text-slate-500">${row.assignedTimeStr}</div>
-           </td>
-           <td class="px-3 py-2">
-             <div class="text-slate-200">${row.callTimeStr}</div>
-             <div class="text-[10px] text-slate-500">${row.callStatus}</div>
-           </td>
-           <td class="px-3 py-2">
-             ${
-               sla !== null
-                 ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                     slaBad
-                       ? "bg-red-500/20 text-red-200"
-                       : "bg-emerald-500/20 text-emerald-200"
-                   }">${sla} dk</span>`
-                 : `<span class="text-[11px] text-slate-500">-</span>`
-             }
-           </td>
-           <td class="px-3 py-2">
-             <div class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-               row.leadStatus === "Randevu"
-                 ? "bg-sky-500/20 text-sky-200"
-                 : row.leadStatus === "Follow Up"
-                 ? overdue
-                   ? "bg-red-500/20 text-red-200"
-                   : "bg-amber-500/20 text-amber-200"
-                 : "bg-slate-700/50 text-slate-200"
-             }">
-               ${row.leadStatus}
-             </div>
-           </td>
-           <td class="px-3 py-2 text-slate-300">${
-             row.rejectionReason || '<span class="text-slate-500">-</span>'
-           }</td>
-           <td class="px-3 py-2 text-center">
-             <button
-               class="inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
-                 row.hasRecording
-                   ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
-                   : "border-slate-700/80 bg-slate-900 text-slate-500"
-               }"
-               title="${
-                 row.hasRecording
-                   ? "Ses kaydını dinle (simülasyon)"
-                   : "Ses kaydı yok"
-               }"
-             >
-               &#127908;
-             </button>
-           </td>
-           <td class="px-3 py-2 text-center">
-             <button
-               class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900 text-[11px] text-slate-300 hover:border-primary-500/60 hover:text-primary-200"
-               title="${row.notes}"
-             >
-               &#9998;
-             </button>
-           </td>
-         `;
-        tableBodyEl.appendChild(tr);
-      });
-    }
-
-    // -------- Render All --------
-    function renderAll() {
-      const filtered = applyFilters();
-      renderKpiCards(filtered);
-      renderCharts(filtered);
-      renderTable(filtered);
-      summaryBadgeEl.classList.remove("hidden");
-      summaryTextEl.textContent = formatDate(MOCK_DATA[0].createdAt);
-    }
-
-    // -------- Event Listeners --------
-    agentFilterEl.addEventListener("change", () => {
-      state.agent = agentFilterEl.value;
-      renderAll();
-    });
-    projectFilterEl.addEventListener("change", () => {
-      state.project = projectFilterEl.value;
-      renderAll();
-    });
-    platformFilterEl.addEventListener("change", () => {
-      state.platform = platformFilterEl.value;
-      renderAll();
-    });
-    searchInputEl.addEventListener("input", () => {
-      state.search = searchInputEl.value;
-      renderAll();
-    });
-    resetFiltersBtn.addEventListener("click", () => {
-      state.agent = "ALL";
-      state.project = "ALL";
-      state.platform = "ALL";
-      state.funnelStage = null;
-      state.chartFilter = null;
-      agentFilterEl.value = "ALL";
-      projectFilterEl.value = "ALL";
-      platformFilterEl.value = "ALL";
-      funnelStatusEl.textContent = "Tümü";
-      chartStatusEl.textContent = "Yok";
-      searchInputEl.value = "";
-      state.search = "";
-      renderAll();
-    });
-    resetDrilldownBtn.addEventListener("click", () => {
-      state.funnelStage = null;
-      state.chartFilter = null;
-      funnelStatusEl.textContent = "Tümü";
-      chartStatusEl.textContent = "Yok";
-      renderAll();
-    });
-
-    // -------- Init --------
-    renderAll();
-  </script>
-</body>
-</html>
+        <td class="whitespace-nowrap px-3 py-2 text-slate-300">#${row.id}</td>
+        <td class="max-w-[160px] truncate px-3 py-2 text-slate-100">
+          ${row.customerName}
+          <div class="mt-0.5 text-[10px] text-slate-500">${row.createdAtStr}</div>
+        </td>
+        <td class="px-3 py-2 text-slate-200">${row.agent}</td>
+        <td class="px-3 py-2 text-slate-200">${row.project}</td>
+        <td class="px-3 py-2">
+          <span
+            class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style="background:${(PLATFORM_COLORS[row.platform] || "#64748b") +
+              "22"};color:${PLATFORM_COLORS[row.platform] || "#64748b"}"
+          >
+            ${row.platform}
+          </span>
+        </td>
+        <td class="px-3 py-2">
+          <div class="text-slate-200">${row.assignedDateStr}</div>
+          <div class="text-[10px] text-slate-500">${row.assignedTimeStr}</div>
+        </td>
+        <td class="px-3 py-2">
+          <div class="text-slate-200">${row.callTimeStr}</div>
+          <div class="text-[10px] text-slate-500">${row.callStatus}</div>
+        </td>
+        <td class="px-3 py-2">
+          ${
+            sla !== null
+              ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  slaBad
+                    ? "bg-red-500/20 text-red-200"
+                    : "bg-emerald-500/20 text-emerald-200"
+                }">${sla} dk</span>`
+              : `<span class="text-[11px] text-slate-500">-</span>`
+          }
+        </td>
+        <td class="px-3 py-2">
+          <div class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+            row.leadStatus === "Randevu"
+              ? "bg-sky-500/20 text-sky-200"
+              : row.leadStatus === "Follow Up"
+              ? overdue
+                ? "bg-red-500/20 text-red-200"
+                : "bg-amber-500/20 text-amber-200"
+              : "bg-slate-700/50 text-slate-200"
+          }">
+            ${row.leadStatus}
+          </div>
+        </td>
+        <td class="px-3 py-2">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            row.leadScore >= 80
+              ? "bg-emerald-500/20 text-emerald-200"
+              : row.leadScore >= 60
+              ? "bg-sky-500/20 text-sky-200"
+              : "bg-slate-700/50 text-slate-200"
+          }">
+            ${row.leadScore}
+          </span>
+        </td>
+        <td class="px-3 py-2">
+          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            row.agentScore >= 85
+              ? "bg-emerald-500/20 text-emerald-200"
+              : row.agentScore >= 75
+              ? "bg-sky-500/20 text-sky-200"
+              : "bg-slate-700/50 text-slate-200"
+          }">
+            ${row.agentScore}
+          </span>
+        </td>
+        <td class="px-3 py-2 text-slate-200">
+          ₺${(row.budget / 1000).toLocaleString("tr-TR")}K
+        </td>
+        <td class="px-3 py-2 text-slate-200">
+          ${
+            row.randevuSuresi != null
+              ? `${row.randevuSuresi} dk`
+              : '<span class="text-slate-500">-</span>'
+          }
+        </td>
+        <td class="px-3 py-2 text-slate-300">
+          ${row.rejectionReason || '<span class="text-slate-500">-</span>'}
+        </td>
+        <td class="px-3 py-2 text-center">
+          <button
+            class="inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
+              row.hasRecording
+                ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
+                : "border-slate-700/80 bg-slate-900 text-slate-500"
+            }"
+            title="${
+              row.hasRecording
+                ? "Ses kaydını dinle (simülasyon)"
+                : "Ses kaydı yok"
+            }"
+          >
+            &#127908;
+          </button>
+        </td>
+        <td class="px-3 py-2 text-center">
+          <button
+            class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900 text-[11px] text-slate-300 hover:border-primary-500/
