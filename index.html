@@ -397,7 +397,16 @@
   // -------- Mock Data & Helpers --------
   const AGENTS = ["Şükran Demir", "Sıla Babaliki", "Koray Yalçın"];
   const PLATFORMS = ["FB", "IG", "Web"];
-  const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
+  const PROJECTS = [
+    "Dolce Mare",
+    "Dolce Vita",
+    "Sea Front",
+    "Esentepe Exclusive",
+    "Karpaz Peninsula 2",
+    "Salamis HH",
+    "TwinSalamis",
+    "Akol Marine",
+  ];
   const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
   const LEAD_STATUS = ["Follow Up", "Randevu", "Ret"];
   const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
@@ -407,6 +416,16 @@
     FB: "#3b82f6",
     IG: "#ec4899",
     Web: "#22c55e",
+  };
+  const PROJECT_COLORS = {
+    "Dolce Mare": "#38bdf8",
+    "Dolce Vita": "#f472b6",
+    "Sea Front": "#22c55e",
+    "Esentepe Exclusive": "#f59e0b",
+    "Karpaz Peninsula 2": "#a855f7",
+    "Salamis HH": "#fb7185",
+    TwinSalamis: "#14b8a6",
+    "Akol Marine": "#60a5fa",
   };
 
   function randomChoice(arr) {
@@ -954,13 +973,48 @@
   }
 
   function buildFunnelData(filtered) {
-    const total = filtered.length;
-    const assigned = filtered.filter((r) => r.assignedAt).length;
-    const called = filtered.filter((r) => r.callStatus === "Arandı").length;
-    const appointment = filtered.filter((r) => r.leadStatus === "Randevu").length;
+    const stages = [
+      {
+        label: "Lead Girişi",
+        match: (row) => Boolean(row.id),
+      },
+      {
+        label: "Atanmış",
+        match: (row) => Boolean(row.assignedAt),
+      },
+      {
+        label: "Arandı",
+        match: (row) => row.callStatus === "Arandı",
+      },
+      {
+        label: "Randevu",
+        match: (row) => row.leadStatus === "Randevu",
+      },
+    ];
+
+    const stageTotals = stages.map((stage) =>
+      filtered.filter((row) => stage.match(row)).length
+    );
+
+    const datasets = PROJECTS.map((project) => {
+      const data = stages.map((stage) =>
+        filtered.filter(
+          (row) => row.project === project && stage.match(row)
+        ).length
+      );
+      return {
+        label: project,
+        data,
+        backgroundColor: PROJECT_COLORS[project] || "#64748b",
+        borderRadius: 8,
+        barThickness: 26,
+      };
+    });
+
     return {
-      labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu"],
-      values: [total, assigned, called, appointment],
+      labels: stages.map((s) => s.label),
+      datasets,
+      totals: stageTotals,
     };
   }
 
@@ -1043,6 +1097,26 @@
     const platforms = buildPlatformData(filtered);
     const times = buildTimeData(filtered);
     const durations = buildDurationData(filtered);
+    const funnelTotalPlugin = {
+      id: "funnelTotalPlugin",
+      afterDatasetsDraw(chart) {
+        const {
+          ctx,
+          chartArea: { right },
+          scales: { y },
+        } = chart;
+        ctx.save();
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#e2e8f0";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        funnel.totals.forEach((total, index) => {
+          const yPos = y.getPixelForValue(index);
+          ctx.fillText(total.toLocaleString("tr-TR"), right + 8, yPos);
+        });
+        ctx.restore();
+      },
+    };
 
     // Funnel chart
     destroyChart(funnelChart);
@@ -1051,30 +1125,49 @@
       type: "bar",
       data: {
         labels: funnel.labels,
-        datasets: [
-          {
-            label: "Adet",
-            data: funnel.values,
-            backgroundColor: funnel.labels.map((_, i) =>
-              i === 0
-                ? "rgba(59,130,246,0.6)"
-                : i === funnel.labels.length - 1
-                ? "rgba(34,197,94,0.7)"
-                : "rgba(99,102,241,0.6)"
-            ),
-          },
-        ],
+        datasets: funnel.datasets,
       },
       options: {
         indexAxis: "y",
         responsive: true,
         plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: { color: "#cbd5f5", font: { size: 11 } },
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              title(items) {
+                return items[0]?.label || "";
+              },
+              label(context) {
+                const project = context.dataset.label;
+                const count = context.parsed.x || 0;
+                const total = funnel.totals[context.dataIndex] || 0;
+                const percent = total
+                  ? ((count / total) * 100).toFixed(1)
+                  : "0.0";
+                return `${project}: ${count} (${percent}%)`;
+              },
+            },
+          },
         },
         scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+          x: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
+          y: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
+        },
+        layout: {
+          padding: { right: 48, left: 8 },
         },
         onClick(_, elements) {
           if (!elements.length) return;
@@ -1085,6 +1178,7 @@
           renderAll();
         },
       },
+      plugins: [funnelTotalPlugin],
     });
 
     // Agent chart
