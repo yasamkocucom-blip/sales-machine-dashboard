@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Sales Machine - Çağrı Merkezi Dashboard</title>
+  <title>Akol Global - Çağrı Merkezi Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -46,11 +47,11 @@
             Sales Machine · Canlı İzleme
           </div>
           <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-            Çağrı Merkezi Performans &amp; Lead Olgunlaştırma
+            Çağrı Merkezi Performans &amp; Satış Yönetimi
           </h1>
           <p class="mt-1 text-sm text-slate-400">
             Temsilci, kanal ve proje bazında gerçek zamanlı
-            <span class="font-medium text-primary-200">lead → randevu</span> görünürlüğü.
+            <span class="font-medium text-primary-200">Sales Machine</span> görünürlüğü.
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -202,7 +203,7 @@
             <div>
               <h2 class="text-sm font-semibold text-slate-50">Sales Funnel</h2>
               <p class="text-xs text-slate-400">
-                Lead girişi &gt; atanma &gt; arama &gt; randevu.
+                Lead girişi &gt; atanma &gt; arama &gt; randevu &gt; satış.
               </p>
             </div>
           </div>
@@ -218,7 +219,7 @@
           <div class="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold text-slate-50">Temsilci Performansı</h2>
-              <p class="text-xs text-slate-400">Toplam arama ve randevu sayısı.</p>
+              <p class="text-xs text-slate-400">Toplam arama, randevu ve satış sayısı.</p>
             </div>
           </div>
           <div class="h-64">
@@ -344,7 +345,7 @@
     const PLATFORMS = ["FB", "IG", "Web"];
     const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
     const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
-    const LEAD_STATUS = ["Follow Up", "Randevu", "Ret"];
+    const LEAD_STATUS = ["Follow Up", "Randevu", "Satış", "Ret"];
     const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
     const PLATFORM_COLORS = {
       FB: "#3b82f6",
@@ -372,92 +373,168 @@
       return Math.round((b.getTime() - a.getTime()) / 60000);
     }
 
-    // 150 lead: 3 temsilciye eşit (50'şer) olacak şekilde otomatik veri
-    const MOCK_DATA = (() => {
-      const base = new Date();
-      const data = [];
-      const totalLeads = 150;
-
-      for (let i = 0; i < totalLeads; i++) {
-        const id = i + 1;
-
-        // Tarihleri son 3 güne yay
-        const createdAt = new Date(
-          base.getFullYear(),
-          base.getMonth(),
-          base.getDate() - (i % 3),
-          9 + (i % 8),
-          (i * 7) % 60
-        );
-
-        // 3 temsilciye eşit dağılım
-        const agent = AGENTS[i % AGENTS.length];
-        const platform = PLATFORMS[i % PLATFORMS.length];
-        const project = PROJECTS[i % PROJECTS.length];
-
-        const assignedAt = addMinutes(createdAt, 5 + (i % 20));
-        const callAt = addMinutes(assignedAt, (i * 2) % 40);
-
-        const callStatus = randomChoice(CALL_STATUS);
-        let leadStatus;
-        if (callStatus.startsWith("No Response")) {
-          // Ulaşılamayanların bir kısmı follow-up, bir kısmı ret
-          leadStatus = randomChoice(["Follow Up", "Ret"]);
-        } else {
-          // Arananların çoğu Randevu, bir kısmı Ret
-          leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
-        }
-
-        let rejectionReason = "";
-        if (leadStatus === "Ret") {
-          rejectionReason = randomChoice(REJECTION_REASONS);
-        }
-
-        // Çağrı süreleri: 20–600 sn arası, kovalara yay
-        let callDuration = 0;
-        if (callStatus === "Arandı") {
-          const buckets = [
-            [20, 59],   // < 1 dk
-            [60, 119],  // 1–2 dk
-            [120, 299], // 2–5 dk
-            [300, 600], // 5+ dk
-          ];
-          const b = buckets[i % buckets.length];
-          callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
-        }
-
-        data.push({
-          id,
-          createdAt,
-          createdAtStr: formatDate(createdAt),
-          agent,
-          assignedAt,
-          assignedDateStr: formatDate(assignedAt),
-          assignedTimeStr: formatTime(assignedAt),
-          customerName: `Müşteri ${id}`,
-          platform,
-          project,
-          callAt,
-          callTimeStr: formatTime(callAt),
-          callStatus,
-          callDuration,
-          leadStatus,
-          rejectionReason,
-          notes:
-            leadStatus === "Randevu"
-              ? "Lead randevuya dönüştürüldü."
-              : leadStatus === "Follow Up"
-              ? "Lead üzerinde tekrar çalışma planlanıyor."
-              : rejectionReason
-              ? `Ret nedeni: ${rejectionReason}.`
-              : "Genel not yok.",
-          hasRecording: callDuration > 0,
-        });
-      }
-
-      return data;
-    })();
-
+    const MOCK_DATA = [
+      {
+        id: 1,
+        createdAt: new Date("2025-01-10T09:15:00"),
+        createdAtStr: "2025-01-10",
+        agent: "Şükran Demir",
+        assignedAt: new Date("2025-01-10T09:20:00"),
+        assignedDateStr: "2025-01-10",
+        assignedTimeStr: "09:20",
+        customerName: "Ali Yılmaz",
+        platform: "FB",
+        project: "Dolce Mare",
+        callAt: new Date("2025-01-10T09:25:00"),
+        callTimeStr: "09:25",
+        callStatus: "Arandı",
+        callDuration: 180,
+        leadStatus: "Randevu",
+        rejectionReason: "",
+        notes: "İkinci aramada randevu aldı.",
+        hasRecording: true,
+      },
+      {
+        id: 2,
+        createdAt: new Date("2025-01-10T09:30:00"),
+        createdAtStr: "2025-01-10",
+        agent: "Sıla Babaliki",
+        assignedAt: new Date("2025-01-10T09:35:00"),
+        assignedDateStr: "2025-01-10",
+        assignedTimeStr: "09:35",
+        customerName: "Ayşe Demir",
+        platform: "IG",
+        project: "Dolce Vita",
+        callAt: new Date("2025-01-10T09:50:00"),
+        callTimeStr: "09:50",
+        callStatus: "Arandı",
+        callDuration: 240,
+        leadStatus: "Satış",
+        rejectionReason: "",
+        notes: "Satış kapandı, sözleşme gönderildi.",
+        hasRecording: true,
+      },
+      {
+        id: 3,
+        createdAt: new Date("2025-01-10T10:00:00"),
+        createdAtStr: "2025-01-10",
+        agent: "Koray Yalçın",
+        assignedAt: new Date("2025-01-10T10:05:00"),
+        assignedDateStr: "2025-01-10",
+        assignedTimeStr: "10:05",
+        customerName: "Mehmet Kara",
+        platform: "Web",
+        project: "Sea Front",
+        callAt: new Date("2025-01-10T10:40:00"),
+        callTimeStr: "10:40",
+        callStatus: "No Response 1",
+        callDuration: 0,
+        leadStatus: "Follow Up",
+        rejectionReason: "",
+        notes: "İlk aramada ulaşılmadı, tekrar aranacak.",
+        hasRecording: false,
+      },
+      {
+        id: 4,
+        createdAt: new Date("2025-01-09T11:15:00"),
+        createdAtStr: "2025-01-09",
+        agent: "Şükran Demir",
+        assignedAt: new Date("2025-01-09T11:25:00"),
+        assignedDateStr: "2025-01-09",
+        assignedTimeStr: "11:25",
+        customerName: "Zeynep Yalçın",
+        platform: "FB",
+        project: "Dolce Mare",
+        callAt: new Date("2025-01-09T11:50:00"),
+        callTimeStr: "11:50",
+        callStatus: "Arandı",
+        callDuration: 200,
+        leadStatus: "Ret",
+        rejectionReason: "Fiyat",
+        notes: "Bütçe sebebiyle ilgilenmiyor.",
+        hasRecording: true,
+      },
+      {
+        id: 5,
+        createdAt: new Date("2025-01-08T12:05:00"),
+        createdAtStr: "2025-01-08",
+        agent: "Sıla Babaliki",
+        assignedAt: new Date("2025-01-08T12:10:00"),
+        assignedDateStr: "2025-01-08",
+        assignedTimeStr: "12:10",
+        customerName: "Can Arslan",
+        platform: "IG",
+        project: "Sea Front",
+        callAt: new Date("2025-01-08T12:20:00"),
+        callTimeStr: "12:20",
+        callStatus: "Arandı",
+        callDuration: 150,
+        leadStatus: "Randevu",
+        rejectionReason: "",
+        notes: "Cumartesi 14:00 için randevu verildi.",
+        hasRecording: true,
+      },
+      {
+        id: 6,
+        createdAt: new Date("2025-01-08T13:00:00"),
+        createdAtStr: "2025-01-08",
+        agent: "Koray Yalçın",
+        assignedAt: new Date("2025-01-08T13:05:00"),
+        assignedDateStr: "2025-01-08",
+        assignedTimeStr: "13:05",
+        customerName: "Elif Aksoy",
+        platform: "Web",
+        project: "Dolce Vita",
+        callAt: new Date("2025-01-08T13:08:00"),
+        callTimeStr: "13:08",
+        callStatus: "Arandı",
+        callDuration: 90,
+        leadStatus: "Satış",
+        rejectionReason: "",
+        notes: "Tek görüşmede satış yapıldı.",
+        hasRecording: true,
+      },
+      {
+        id: 7,
+        createdAt: new Date("2025-01-07T15:20:00"),
+        createdAtStr: "2025-01-07",
+        agent: "Şükran Demir",
+        assignedAt: new Date("2025-01-07T15:30:00"),
+        assignedDateStr: "2025-01-07",
+        assignedTimeStr: "15:30",
+        customerName: "Burak Sezer",
+        platform: "FB",
+        project: "Sea Front",
+        callAt: new Date("2025-01-07T16:20:00"),
+        callTimeStr: "16:20",
+        callStatus: "No Response 3",
+        callDuration: 0,
+        leadStatus: "Ret",
+        rejectionReason: "İlgilenmiyor",
+        notes: "3 kez aranmasına rağmen ulaşılmadı.",
+        hasRecording: false,
+      },
+      {
+        id: 8,
+        createdAt: new Date("2025-01-06T10:45:00"),
+        createdAtStr: "2025-01-06",
+        agent: "Sıla Babaliki",
+        assignedAt: new Date("2025-01-06T11:00:00"),
+        assignedDateStr: "2025-01-06",
+        assignedTimeStr: "11:00",
+        customerName: "Deniz Kaya",
+        platform: "IG",
+        project: "Dolce Mare",
+        callAt: new Date("2025-01-06T11:20:00"),
+        callTimeStr: "11:20",
+        callStatus: "Arandı",
+        callDuration: 210,
+        leadStatus: "Follow Up",
+        rejectionReason: "",
+        notes: "Karar için bir hafta süre istedi.",
+        hasRecording: true,
+      },
+    ];
     const now = new Date();
 
     // -------- Global State --------
@@ -509,10 +586,11 @@
         if (state.funnelStage) {
           const s = state.funnelStage;
           if (s === "Lead Girişi") {
-            // tüm leadler
+            // all leads
           } else if (s === "Atanmış" && !row.assignedAt) return false;
           else if (s === "Arandı" && row.callStatus !== "Arandı") return false;
           else if (s === "Randevu" && row.leadStatus !== "Randevu") return false;
+          else if (s === "Satış" && row.leadStatus !== "Satış") return false;
         }
 
         if (state.chartFilter) {
@@ -545,8 +623,8 @@
     // -------- KPI Cards --------
     function renderKpiCards(filtered) {
       const total = filtered.length;
-      const appointments = filtered.filter((r) => r.leadStatus === "Randevu").length;
-      const conv = total ? ((appointments / total) * 100).toFixed(1) + "%" : "-";
+      const sales = filtered.filter((r) => r.leadStatus === "Satış").length;
+      const conv = total ? ((sales / total) * 100).toFixed(1) + "%" : "-";
 
       let sumSla = 0;
       let countSla = 0;
@@ -583,15 +661,15 @@
               : "success",
         },
         {
-          label: "Randevuya Dönüşüm Oranı",
+          label: "Genel Dönüşüm Oranı",
           value: conv,
-          helper: `${appointments} randevu / ${total} lead`,
+          helper: `${sales} satış / ${total} lead`,
           tone: "neutral",
         },
         {
           label: "Toplam Arama & Başarılı Arama",
           value: totalCalls ? `${totalCalls} arama` : "Veri yok",
-          helper: `Arandı % ${successRate}`,
+          helper: `Başarılı % ${successRate}`,
           tone: "success",
         },
         {
@@ -640,9 +718,10 @@
       const assigned = filtered.filter((r) => r.assignedAt).length;
       const called = filtered.filter((r) => r.callStatus === "Arandı").length;
       const appointment = filtered.filter((r) => r.leadStatus === "Randevu").length;
+      const sales = filtered.filter((r) => r.leadStatus === "Satış").length;
       return {
-        labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu"],
-        values: [total, assigned, called, appointment],
+        labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu", "Satış"],
+        values: [total, assigned, called, appointment, sales],
       };
     }
 
@@ -653,6 +732,7 @@
           agent: a,
           totalCalls: rows.filter((r) => r.callStatus).length,
           appointments: rows.filter((r) => r.leadStatus === "Randevu").length,
+          sales: rows.filter((r) => r.leadStatus === "Satış").length,
         };
       });
     }
@@ -724,7 +804,7 @@
               backgroundColor: funnel.labels.map((_, i) =>
                 i === 0
                   ? "rgba(59,130,246,0.6)"
-                  : i === funnel.labels.length - 1
+                  : i === 4
                   ? "rgba(34,197,94,0.7)"
                   : "rgba(99,102,241,0.6)"
               ),
@@ -770,6 +850,11 @@
               label: "Randevu",
               data: agents.map((a) => a.appointments),
               backgroundColor: "rgba(34,197,94,0.7)",
+            },
+            {
+              label: "Satış",
+              data: agents.map((a) => a.sales),
+              backgroundColor: "rgba(168,85,247,0.7)",
             },
           ],
         },
@@ -1008,7 +1093,9 @@
            </td>
            <td class="px-3 py-2">
              <div class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-               row.leadStatus === "Randevu"
+               row.leadStatus === "Satış"
+                 ? "bg-emerald-500/20 text-emerald-200"
+                 : row.leadStatus === "Randevu"
                  ? "bg-sky-500/20 text-sky-200"
                  : row.leadStatus === "Follow Up"
                  ? overdue
