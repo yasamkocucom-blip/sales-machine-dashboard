@@ -70,6 +70,21 @@
       </div>
     </header>
 
+    <!-- Daily Conversions -->
+    <section
+      class="mb-6 rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+    >
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-50">Daily Conversions</h2>
+          <p class="text-xs text-slate-400">1–31 Aralık lead dağılımı.</p>
+        </div>
+      </div>
+      <div class="h-64">
+        <canvas id="dailyChart"></canvas>
+      </div>
+    </section>
+
     <!-- KPI Cards -->
     <section class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="kpiCards"></section>
 
@@ -540,9 +555,8 @@
     },
   ];
 
-  // otomatik ek lead'lerle toplam 150'ye tamamla
+  // otomatik ek lead'lerle toplam 1000'e tamamla (rastgele gün ve temsilci)
   const MOCK_DATA = (() => {
-    const base = new Date();
     const data = BASE_DATA.map((row) => {
       const randevuSuresi =
         row.leadStatus === "Randevu"
@@ -562,36 +576,37 @@
       };
     });
 
-    const startId = data.length + 1;
-    const totalLeads = 150;
     const agentBaseScores = {
       "Şükran Demir": 85,
       "Sıla Babaliki": 88,
       "Koray Yalçın": 82,
     };
 
-    for (let i = startId; i <= totalLeads; i++) {
+    const startId = data.length + 1;
+    const totalLeads = 1000;
+
+    for (let id = startId; id <= totalLeads; id++) {
       const createdAt = new Date(
-        base.getFullYear(),
-        base.getMonth(),
-        base.getDate() - ((i - 1) % 3),
-        9 + (i % 8),
-        (i * 7) % 60
+        2024,
+        11,
+        1 + Math.floor(Math.random() * 31),
+        9 + (id % 8),
+        Math.floor(Math.random() * 60)
       );
 
-      const agent = AGENTS[(i - 1) % AGENTS.length];
-      const platform = PLATFORMS[(i - 1) % PLATFORMS.length];
-      const project = PROJECTS[(i - 1) % PROJECTS.length];
+      const agent = randomChoice(AGENTS);
+      const platform = randomChoice(PLATFORMS);
+      const project = randomChoice(PROJECTS);
 
-      const assignedAt = addMinutes(createdAt, 5 + (i % 20));
-      const callAt = addMinutes(assignedAt, (i * 2) % 40);
+      const assignedAt = addMinutes(createdAt, 5 + (id % 20));
+      const callAt = addMinutes(assignedAt, (id * 2) % 40);
 
       const callStatus = randomChoice(CALL_STATUS);
       let leadStatus;
       if (callStatus.startsWith("No Response")) {
         leadStatus = randomChoice(["Follow Up", "Ret"]);
       } else {
-        leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
+        leadStatus = id % 5 === 0 ? "Ret" : "Randevu";
       }
 
       let rejectionReason = "";
@@ -607,11 +622,11 @@
           [120, 299],
           [300, 600],
         ];
-        const b = buckets[i % buckets.length];
+        const b = buckets[id % buckets.length];
         callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
       }
 
-      const budget = 500000 + ((i - 1) % 15) * 100000;
+      const budget = 500000 + ((id - 1) % 15) * 100000;
 
       let leadScore =
         40 +
@@ -620,21 +635,21 @@
         (callStatus.startsWith("No Response") ? 10 : 0);
       leadScore = Math.max(0, Math.min(100, Math.round(leadScore)));
 
-      let agentScore = (agentBaseScores[agent] || 80) + (i % 5) - 2;
+      let agentScore = (agentBaseScores[agent] || 80) + (id % 5) - 2;
       agentScore = Math.max(60, Math.min(100, agentScore));
 
       const randevuSuresi =
         leadStatus === "Randevu" ? diffInMinutes(createdAt, callAt) : null;
 
       data.push({
-        id: i,
+        id,
         createdAt,
         createdAtStr: formatDate(createdAt),
         agent,
         assignedAt,
         assignedDateStr: formatDate(assignedAt),
         assignedTimeStr: formatTime(assignedAt),
-        customerName: `Müşteri ${i}`,
+        customerName: `Müşteri ${id}`,
         platform,
         project,
         callAt,
@@ -836,7 +851,53 @@
   }
 
   // -------- Charts --------
-  let funnelChart, agentChart, platformChart, timeChart, durationChart;
+  let dailyChart, funnelChart, agentChart, platformChart, timeChart, durationChart;
+
+  function buildDailyConversionsData() {
+    const labels = [];
+    const values = [];
+    let value = 30 + Math.floor(Math.random() * 20);
+
+    for (let day = 1; day <= 31; day++) {
+      labels.push(`${day} Ara`);
+      value += Math.floor(Math.random() * 15) - 7;
+      value = Math.max(10, Math.min(80, value));
+      values.push(value);
+    }
+
+    return { labels, values };
+  }
+
+  function renderDailyChart() {
+    const daily = buildDailyConversionsData();
+    destroyChart(dailyChart);
+    const ctxDaily = document.getElementById("dailyChart").getContext("2d");
+    dailyChart = new Chart(ctxDaily, {
+      type: "bar",
+      data: {
+        labels: daily.labels,
+        datasets: [
+          {
+            label: "Lead Sayısı",
+            data: daily.values,
+            backgroundColor: "rgba(56,189,248,0.6)",
+            borderRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
+          tooltip: { enabled: true },
+        },
+        scales: {
+          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+        },
+      },
+    });
+  }
 
   function buildFunnelData(filtered) {
     const total = filtered.length;
@@ -1337,6 +1398,7 @@
   });
 
   // -------- Init --------
+  renderDailyChart();
   renderAll();
 </script>
 </body>
