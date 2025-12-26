@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Sales Machinee - Çağrı Merkezi Dashboard</title>
+  <title>Sales Machine - Çağrı Merkezi Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -376,34 +376,212 @@
     return Math.round((b.getTime() - a.getTime()) / 60000);
   }
 
-  // Tam 150 lead, her temsilciye 50 lead (round-robin)
+  // Elle yazdığın 8 kayıt + üstüne 142 otomatik kayıt = 150 lead
+  const BASE_DATA = [
+    {
+      id: 1,
+      createdAt: new Date("2025-01-10T09:15:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-10T09:20:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "09:20",
+      customerName: "Ali Yılmaz",
+      platform: "FB",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-10T09:25:00"),
+      callTimeStr: "09:25",
+      callStatus: "Arandı",
+      callDuration: 180,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "İkinci aramada randevu aldı.",
+      hasRecording: true,
+    },
+    {
+      id: 2,
+      createdAt: new Date("2025-01-10T09:30:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-10T09:35:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "09:35",
+      customerName: "Ayşe Demir",
+      platform: "IG",
+      project: "Dolce Vita",
+      callAt: new Date("2025-01-10T09:50:00"),
+      callTimeStr: "09:50",
+      callStatus: "Arandı",
+      callDuration: 240,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Lead randevuya dönüştürüldü.",
+      hasRecording: true,
+    },
+    {
+      id: 3,
+      createdAt: new Date("2025-01-10T10:00:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Koray Yalçın",
+      assignedAt: new Date("2025-01-10T10:05:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "10:05",
+      customerName: "Mehmet Kara",
+      platform: "Web",
+      project: "Sea Front",
+      callAt: new Date("2025-01-10T10:40:00"),
+      callTimeStr: "10:40",
+      callStatus: "No Response 1",
+      callDuration: 0,
+      leadStatus: "Follow Up",
+      rejectionReason: "",
+      notes: "İlk aramada ulaşılmadı, tekrar aranacak.",
+      hasRecording: false,
+    },
+    {
+      id: 4,
+      createdAt: new Date("2025-01-09T11:15:00"),
+      createdAtStr: "2025-01-09",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-09T11:25:00"),
+      assignedDateStr: "2025-01-09",
+      assignedTimeStr: "11:25",
+      customerName: "Zeynep Yalçın",
+      platform: "FB",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-09T11:50:00"),
+      callTimeStr: "11:50",
+      callStatus: "Arandı",
+      callDuration: 200,
+      leadStatus: "Ret",
+      rejectionReason: "Fiyat",
+      notes: "Bütçe sebebiyle ilgilenmiyor.",
+      hasRecording: true,
+    },
+    {
+      id: 5,
+      createdAt: new Date("2025-01-08T12:05:00"),
+      createdAtStr: "2025-01-08",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-08T12:10:00"),
+      assignedDateStr: "2025-01-08",
+      assignedTimeStr: "12:10",
+      customerName: "Can Arslan",
+      platform: "IG",
+      project: "Sea Front",
+      callAt: new Date("2025-01-08T12:20:00"),
+      callTimeStr: "12:20",
+      callStatus: "Arandı",
+      callDuration: 150,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Cumartesi 14:00 için randevu verildi.",
+      hasRecording: true,
+    },
+    {
+      id: 6,
+      createdAt: new Date("2025-01-08T13:00:00"),
+      createdAtStr: "2025-01-08",
+      agent: "Koray Yalçın",
+      assignedAt: new Date("2025-01-08T13:05:00"),
+      assignedDateStr: "2025-01-08",
+      assignedTimeStr: "13:05",
+      customerName: "Elif Aksoy",
+      platform: "Web",
+      project: "Dolce Vita",
+      callAt: new Date("2025-01-08T13:08:00"),
+      callTimeStr: "13:08",
+      callStatus: "Arandı",
+      callDuration: 90,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Lead randevuya dönüştürüldü.",
+      hasRecording: true,
+    },
+    {
+      id: 7,
+      createdAt: new Date("2025-01-07T15:20:00"),
+      createdAtStr: "2025-01-07",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-07T15:30:00"),
+      assignedDateStr: "2025-01-07",
+      assignedTimeStr: "15:30",
+      customerName: "Burak Sezer",
+      platform: "FB",
+      project: "Sea Front",
+      callAt: new Date("2025-01-07T16:20:00"),
+      callTimeStr: "16:20",
+      callStatus: "No Response 3",
+      callDuration: 0,
+      leadStatus: "Ret",
+      rejectionReason: "İlgilenmiyor",
+      notes: "3 kez aranmasına rağmen ulaşılmadı.",
+      hasRecording: false,
+    },
+    {
+      id: 8,
+      createdAt: new Date("2025-01-06T10:45:00"),
+      createdAtStr: "2025-01-06",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-06T11:00:00"),
+      assignedDateStr: "2025-01-06",
+      assignedTimeStr: "11:00",
+      customerName: "Deniz Kaya",
+      platform: "IG",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-06T11:20:00"),
+      callTimeStr: "11:20",
+      callStatus: "Arandı",
+      callDuration: 210,
+      leadStatus: "Follow Up",
+      rejectionReason: "",
+      notes: "Karar için bir hafta süre istedi.",
+      hasRecording: true,
+    },
+  ];
+
+  // otomatik ek lead'lerle toplam 150'ye tamamla
   const MOCK_DATA = (() => {
     const base = new Date();
-    const data = [];
-    const totalLeads = 150;
+    const data = BASE_DATA.map((row) => {
+      const randevuSuresi =
+        row.leadStatus === "Randevu"
+          ? diffInMinutes(row.createdAt, row.callAt)
+          : null;
 
+      const budget = 700000;
+      const leadScore = row.leadStatus === "Randevu" ? 80 : 60;
+      const agentScore = row.agent === "Sıla Babaliki" ? 88 : row.agent === "Şükran Demir" ? 85 : 82;
+
+      return {
+        ...row,
+        budget,
+        leadScore,
+        agentScore,
+        randevuSuresi,
+      };
+    });
+
+    const startId = data.length + 1;
+    const totalLeads = 150;
     const agentBaseScores = {
       "Şükran Demir": 85,
       "Sıla Babaliki": 88,
       "Koray Yalçın": 82,
     };
 
-    for (let i = 0; i < totalLeads; i++) {
-      const id = i + 1;
-
-      // 3 temsilciye eşit dağılım
-      const agent = AGENTS[i % AGENTS.length];
-
+    for (let i = startId; i <= totalLeads; i++) {
       const createdAt = new Date(
         base.getFullYear(),
         base.getMonth(),
-        base.getDate() - (i % 3),
+        base.getDate() - ((i - 1) % 3),
         9 + (i % 8),
         (i * 7) % 60
       );
 
-      const platform = PLATFORMS[i % PLATFORMS.length];
-      const project = PROJECTS[i % PROJECTS.length];
+      const agent = AGENTS[(i - 1) % AGENTS.length];
+      const platform = PLATFORMS[(i - 1) % PLATFORMS.length];
+      const project = PROJECTS[(i - 1) % PROJECTS.length];
 
       const assignedAt = addMinutes(createdAt, 5 + (i % 20));
       const callAt = addMinutes(assignedAt, (i * 2) % 40);
@@ -413,7 +591,6 @@
       if (callStatus.startsWith("No Response")) {
         leadStatus = randomChoice(["Follow Up", "Ret"]);
       } else {
-        // Arananların çoğu randevu
         leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
       }
 
@@ -434,7 +611,7 @@
         callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
       }
 
-      const budget = 500000 + (i % 15) * 100000;
+      const budget = 500000 + ((i - 1) % 15) * 100000;
 
       let leadScore =
         40 +
@@ -450,14 +627,14 @@
         leadStatus === "Randevu" ? diffInMinutes(createdAt, callAt) : null;
 
       data.push({
-        id,
+        id: i,
         createdAt,
         createdAtStr: formatDate(createdAt),
         agent,
         assignedAt,
         assignedDateStr: formatDate(assignedAt),
         assignedTimeStr: formatTime(assignedAt),
-        customerName: `Müşteri ${id}`,
+        customerName: `Müşteri ${i}`,
         platform,
         project,
         callAt,
@@ -604,407 +781,3 @@
         value: avgSla === "-" ? "-" : avgSla + " dk",
         helper: avgSla === "-" ? "Yeterli veri yok" : `>%15 SLA: ${overRate}%`,
         tone:
-          avgSla !== "-" && parseFloat(avgSla) > 15
-            ? "danger"
-            : "success",
-      },
-      {
-        label: "Randevuya Dönüşüm Oranı",
-        value: conv,
-        helper: `${appointments} randevu / ${total} lead`,
-        tone: "neutral",
-      },
-      {
-        label: "Toplam Arama & Başarılı Arama",
-        value: totalCalls ? `${totalCalls} arama` : "Veri yok",
-        helper: `Arandı % ${successRate}`,
-        tone: "success",
-      },
-      {
-        label: "Kayıp / Niteliksiz Lead",
-        value: lostLeads,
-        helper: "Ret + 3. no-response",
-        tone: lostLeads > 0 ? "danger" : "neutral",
-      },
-    ];
-
-    kpiCardsEl.innerHTML = "";
-    cards.forEach((c) => {
-      const toneClasses =
-        c.tone === "danger"
-          ? "bg-red-500/10 text-red-300 ring-red-500/40"
-          : c.tone === "success"
-          ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/40"
-          : "bg-primary-500/10 text-primary-200 ring-primary-500/40";
-
-      const card = document.createElement("div");
-      card.className =
-        "rounded-3xl bg-slate-900/80 ring-1 ring-slate-700/60 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-xl";
-      card.innerHTML = `
-         <div class="flex items-center justify-between gap-3">
-           <div>
-             <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-               ${c.label}
-             </p>
-             <p class="mt-2 text-2xl font-semibold ${toneClasses.split(" ")[1]}">
-               ${c.value}
-             </p>
-           </div>
-           <div class="inline-flex items-center justify-center rounded-2xl px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] ${toneClasses}">
-             ${c.helper}
-           </div>
-         </div>`;
-      kpiCardsEl.appendChild(card);
-    });
-  }
-
-  // -------- Charts --------
-  let funnelChart, agentChart, platformChart, timeChart, durationChart;
-
-  function buildFunnelData(filtered) {
-    const total = filtered.length;
-    const assigned = filtered.filter((r) => r.assignedAt).length;
-    const called = filtered.filter((r) => r.callStatus === "Arandı").length;
-    const appointment = filtered.filter((r) => r.leadStatus === "Randevu").length;
-    return {
-      labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu"],
-      values: [total, assigned, called, appointment],
-    };
-  }
-
-  function buildAgentData(filtered) {
-    return AGENTS.map((a) => {
-      const rows = filtered.filter((r) => r.agent === a);
-      return {
-        agent: a,
-        totalCalls: rows.filter((r) => r.callStatus).length,
-        appointments: rows.filter((r) => r.leadStatus === "Randevu").length,
-      };
-    });
-  }
-
-  function buildPlatformData(filtered) {
-    return PLATFORMS.map((p) => ({
-      platform: p,
-      value: filtered.filter((r) => r.platform === p).length,
-    })).filter((d) => d.value > 0);
-  }
-
-  function buildTimeData(filtered) {
-    const buckets = {};
-    filtered.forEach((r) => {
-      if (!r.callAt) return;
-      const h = r.callAt.getHours();
-      const label = String(h).padStart(2, "0") + ":00";
-      if (!buckets[h]) buckets[h] = { hour: h, label, calls: 0 };
-      buckets[h].calls++;
-    });
-    return Object.values(buckets).sort((a, b) => a.hour - b.hour);
-  }
-
-  function buildDurationData(filtered) {
-    const buckets = {
-      "<1 dk": 0,
-      "1–2 dk": 0,
-      "2–5 dk": 0,
-      "5+ dk": 0,
-    };
-
-    filtered.forEach((r) => {
-      const d = r.callDuration || 0;
-      if (d === 0) return;
-      if (d < 60) buckets["<1 dk"]++;
-      else if (d < 120) buckets["1–2 dk"]++;
-      else if (d < 300) buckets["2–5 dk"]++;
-      else buckets["5+ dk"]++;
-    });
-
-    return {
-      labels: Object.keys(buckets),
-      values: Object.values(buckets),
-    };
-  }
-
-  function destroyChart(ch) {
-    if (ch) ch.destroy();
-  }
-
-  function renderCharts(filtered) {
-    const funnel = buildFunnelData(filtered);
-    const agents = buildAgentData(filtered);
-    const platforms = buildPlatformData(filtered);
-    const times = buildTimeData(filtered);
-    const durations = buildDurationData(filtered);
-
-    // Funnel chart
-    destroyChart(funnelChart);
-    const ctxFunnel = document.getElementById("funnelChart").getContext("2d");
-    funnelChart = new Chart(ctxFunnel, {
-      type: "bar",
-      data: {
-        labels: funnel.labels,
-        datasets: [
-          {
-            label: "Adet",
-            data: funnel.values,
-            backgroundColor: funnel.labels.map((_, i) =>
-              i === 0
-                ? "rgba(59,130,246,0.6)"
-                : i === funnel.labels.length - 1
-                ? "rgba(34,197,94,0.7)"
-                : "rgba(99,102,241,0.6)"
-            ),
-          },
-        ],
-      },
-      options: {
-        indexAxis: "y",
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true },
-        },
-        scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-        },
-        onClick(_, elements) {
-          if (!elements.length) return;
-          const index = elements[0].index;
-          const stage = funnel.labels[index];
-          state.funnelStage = state.funnelStage === stage ? null : stage;
-          funnelStatusEl.textContent = state.funnelStage || "Tümü";
-          renderAll();
-        },
-      },
-    });
-
-    // Agent chart
-    destroyChart(agentChart);
-    const ctxAgent = document.getElementById("agentChart").getContext("2d");
-    agentChart = new Chart(ctxAgent, {
-      type: "bar",
-      data: {
-        labels: agents.map((a) => a.agent),
-        datasets: [
-          {
-            label: "Toplam Arama",
-            data: agents.map((a) => a.totalCalls),
-            backgroundColor: "rgba(59,130,246,0.6)",
-          },
-          {
-            label: "Randevu",
-            data: agents.map((a) => a.appointments),
-            backgroundColor: "rgba(34,197,94,0.7)",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            labels: { color: "#cbd5f5", font: { size: 11 } },
-          },
-        },
-        scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-        },
-        onClick(_, elements) {
-          if (!elements.length) return;
-          const index = elements[0].index;
-          const agent = agents[index].agent;
-          const current = state.chartFilter;
-          if (current && current.type === "agent" && current.value === agent) {
-            state.chartFilter = null;
-          } else {
-            state.chartFilter = { type: "agent", value: agent };
-          }
-          chartStatusEl.textContent = state.chartFilter
-            ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-            : "Yok";
-          renderAll();
-        },
-      },
-    });
-
-    // Platform chart
-    destroyChart(platformChart);
-    const ctxPlatform = document.getElementById("platformChart").getContext("2d");
-    platformChart = new Chart(ctxPlatform, {
-      type: "pie",
-      data: {
-        labels: platforms.map((p) => p.platform),
-        datasets: [
-          {
-            data: platforms.map((p) => p.value),
-            backgroundColor: platforms.map(
-              (p) => PLATFORM_COLORS[p.platform] || "#6366f1"
-            ),
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: true },
-        },
-        onClick(_, elements) {
-          if (!elements.length) return;
-          const index = elements[0].index;
-          const platform = platforms[index].platform;
-          const current = state.chartFilter;
-          if (
-            current &&
-            current.type === "platform" &&
-            current.value === platform
-          ) {
-            state.chartFilter = null;
-          } else {
-            state.chartFilter = { type: "platform", value: platform };
-          }
-          chartStatusEl.textContent = state.chartFilter
-            ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-            : "Yok";
-          renderAll();
-        },
-      },
-    });
-
-    // Platform legend
-    platformLegendEl.innerHTML = "";
-    platforms.forEach((p) => {
-      const row = document.createElement("div");
-      row.className = "flex items-center justify-between gap-2";
-      row.innerHTML = `
-         <div class="flex items-center gap-1.5">
-           <span class="h-2 w-2 rounded-full" style="background:${
-             PLATFORM_COLORS[p.platform]
-           }"></span>
-           <span>${p.platform}</span>
-         </div>
-         <span class="text-slate-400">${p.value}</span>`;
-      platformLegendEl.appendChild(row);
-    });
-
-    // Time chart
-    destroyChart(timeChart);
-    const ctxTime = document.getElementById("timeChart").getContext("2d");
-    timeChart = new Chart(ctxTime, {
-      type: "line",
-      data: {
-        labels: times.map((t) => t.label),
-        datasets: [
-          {
-            label: "Arama Sayısı",
-            data: times.map((t) => t.calls),
-            borderColor: "#38bdf8",
-            backgroundColor: "rgba(56,189,248,0.3)",
-            tension: 0.3,
-            pointRadius: 3,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
-          tooltip: { enabled: true },
-        },
-        scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-        },
-        onClick(_, elements) {
-          if (!elements.length) return;
-          const index = elements[0].index;
-          const hour = times[index].hour;
-          const current = state.chartFilter;
-          if (current && current.type === "hour" && current.value === hour) {
-            state.chartFilter = null;
-          } else {
-            state.chartFilter = { type: "hour", value: hour };
-          }
-          chartStatusEl.textContent = state.chartFilter
-            ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-            : "Yok";
-          renderAll();
-        },
-      },
-    });
-
-    // Duration chart
-    destroyChart(durationChart);
-    const ctxDuration = document.getElementById("durationChart").getContext("2d");
-    durationChart = new Chart(ctxDuration, {
-      type: "bar",
-      data: {
-        labels: durations.labels,
-        datasets: [
-          {
-            label: "Çağrı Sayısı",
-            data: durations.values,
-            backgroundColor: [
-              "rgba(56,189,248,0.7)",
-              "rgba(34,197,94,0.7)",
-              "rgba(250,204,21,0.8)",
-              "rgba(239,68,68,0.8)",
-            ],
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
-          tooltip: { enabled: true },
-        },
-        scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-        },
-      },
-    });
-  }
-
-  // -------- Table --------
-  function renderTable(filtered) {
-    tableBodyEl.innerHTML = "";
-    const followUpOverdueIds = new Set(
-      filtered
-        .filter(
-          (r) =>
-            r.leadStatus === "Follow Up" &&
-            diffInMinutes(r.createdAt, now) > 24 * 60
-        )
-        .map((r) => r.id)
-    );
-    rowCountTextEl.textContent = filtered.length;
-
-    filtered.forEach((row) => {
-      const tr = document.createElement("tr");
-      const sla =
-        row.assignedAt && row.callAt
-          ? diffInMinutes(row.assignedAt, row.callAt)
-          : null;
-      const slaBad = sla !== null && sla > 15;
-      const overdue = followUpOverdueIds.has(row.id);
-      tr.className =
-        "border-t border-slate-800/80 transition-colors " +
-        (overdue
-          ? "bg-red-950/40"
-          : "hover:bg-slate-900/50");
-
-      tr.innerHTML = `
-        <td class="whitespace-nowrap px-3 py-2 text-slate-300">#${row.id}</td>
-        <td class="max-w-[160px] truncate px-3 py-2 text-slate-100">
-          ${row.customerName}
-          <div class="mt-0.5 text-[10px] text-slate-500">${row.createdAtStr}</div>
-        </td>
-        <td class="px-3 py-2 text-slate-200">${row.agent}</td>
-        <td class="px-3 py-2 text-slate-200">${row.project}</td>
-        <td class="px-3 py-2">
-          <span
-            class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style="background:${(PLATFORM
