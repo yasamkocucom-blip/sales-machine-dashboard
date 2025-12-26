@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Akol - Çağrı Merkezi Dashboard</title>
+  <title>Sales Machine - Çağrı Merkezi Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -33,1068 +32,752 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-50 antialiased">
-  <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-    <div class="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-      <!-- Header -->
-      <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div
-            class="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400 ring-1 ring-slate-700/70"
-          >
-            <span
-              class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.45)]"
-            ></span>
-            Sales Machine · Canlı İzleme
-          </div>
-          <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
-            Çağrı Merkezi Performans &amp; Lead Olgunlaştırma
-          </h1>
-          <p class="mt-1 text-sm text-slate-400">
-            Temsilci, kanal ve proje bazında gerçek zamanlı
-            <span class="font-medium text-primary-200">lead → randevu</span> görünürlüğü.
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
-          <button
-            id="resetFiltersBtn"
-            class="rounded-2xl border border-slate-700/70 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.8)] transition hover:border-slate-500/80 hover:bg-slate-800/80"
-          >
-            Filtreleri Temizle
-          </button>
-          <div
-            id="summaryBadge"
-            class="hidden items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 ring-1 ring-slate-700/70 shadow-[0_12px_40px_rgba(15,23,42,0.9)] sm:flex"
-          >
-            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-            <span id="summaryText">Bugün</span>
-          </div>
-        </div>
-      </header>
-
-      
-      <!-- KPI Cards -->
-      <section class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="kpiCards"></section>
-
-      <!-- Filters + Drilldown Status -->
-      <section class="mb-6 flex flex-col gap-4 lg:flex-row">
-        <!-- Filters -->
+<div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+  <div class="mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
         <div
-          class="flex-1 rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+          class="inline-flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400 ring-1 ring-slate-700/70"
         >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Filtreler</h2>
-              <p class="text-xs text-slate-400">Temsilci, proje ve platform bazlı görünüm.</p>
-            </div>
-            <button
-              id="resetDrilldownBtn"
-              class="inline-flex items-center gap-1 rounded-2xl border border-slate-700/80 px-3 py-1 text-[11px] font-medium text-slate-200 transition hover:border-slate-500/80 hover:bg-slate-800/80"
-            >
-              <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
-              Drill-down sıfırla
-            </button>
+          <span
+            class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.45)]"
+          ></span>
+          Sales Machine · Canlı İzleme
+        </div>
+        <h1 class="mt-3 text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+          Çağrı Merkezi Performans &amp; Lead Olgunlaştırma
+        </h1>
+        <p class="mt-1 text-sm text-slate-400">
+          Temsilci, kanal ve proje bazında gerçek zamanlı
+          <span class="font-medium text-primary-200">lead → randevu</span> görünürlüğü.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          id="resetFiltersBtn"
+          class="rounded-2xl border border-slate-700/70 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-[0_12px_40px_rgba(15,23,42,0.8)] transition hover:border-slate-500/80 hover:bg-slate-800/80"
+        >
+          Filtreleri Temizle
+        </button>
+        <div
+          id="summaryBadge"
+          class="hidden items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300 ring-1 ring-slate-700/70 shadow-[0_12px_40px_rgba(15,23,42,0.9)] sm:flex"
+        >
+          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+          <span id="summaryText">Bugün</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="kpiCards"></section>
+
+    <!-- Filters + Drilldown Status -->
+    <section class="mb-6 flex flex-col gap-4 lg:flex-row">
+      <!-- Filters -->
+      <div
+        class="flex-1 rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Filtreler</h2>
+            <p class="text-xs text-slate-400">Temsilci, proje ve platform bazlı görünüm.</p>
           </div>
-          <div class="grid gap-3 md:grid-cols-3">
-            <div>
-              <label
-                class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
-              >Temsilci</label>
-              <select
-                id="agentFilter"
-                class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="ALL">Tümü</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
-              >Proje</label>
-              <select
-                id="projectFilter"
-                class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="ALL">Tümü</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
-              >Platform</label>
-              <select
-                id="platformFilter"
-                class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              >
-                <option value="ALL">Tümü</option>
-              </select>
-            </div>
-          </div>
-          <div class="mt-4">
+          <button
+            id="resetDrilldownBtn"
+            class="inline-flex items-center gap-1 rounded-2xl border border-slate-700/80 px-3 py-1 text-[11px] font-medium text-slate-200 transition hover:border-slate-500/80 hover:bg-slate-800/80"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+            Drill-down sıfırla
+          </button>
+        </div>
+        <div class="grid gap-3 md:grid-cols-3">
+          <div>
             <label
               class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
-            >Hızlı Arama</label>
-            <div class="relative">
-              <input
-                id="searchInput"
-                placeholder="Müşteri, ID, temsilci, proje..."
-                class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 py-2 pl-8 pr-3 text-xs text-slate-100 placeholder:text-slate-500 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
-              <span
-                class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  class="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                >
-                  <circle cx="11" cy="11" r="6" />
-                  <line x1="16" y1="16" x2="21" y2="21" />
-                </svg>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Drilldown Status -->
-        <div
-          class="w-full rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:max-w-sm"
-        >
-          <h2 class="mb-3 text-sm font-semibold text-slate-50">Drill-down Durumu</h2>
-          <div class="space-y-2 text-xs text-slate-300">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Funnel</span>
-              <span
-                id="funnelStatus"
-                class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
-              >
-                Tümü
-              </span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Grafik Seçimi</span>
-              <span
-                id="chartStatus"
-                class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
-              >
-                Yok
-              </span>
-            </div>
-            <div
-              class="mt-3 rounded-2xl bg-gradient-to-r from-primary-500/20 via-emerald-500/10 to-sky-500/20 p-3 text-[11px] text-slate-100 ring-1 ring-primary-500/40"
+            >Temsilci</label>
+            <select
+              id="agentFilter"
+              class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
             >
-              Grafiklerin üzerine tıklayarak tabloyu filtreleyebilirsiniz.
-              <span class="font-medium text-primary-200">
-                Tek tık = filtrele, butonlar = sıfırla.
-              </span>
-            </div>
+              <option value="ALL">Tümü</option>
+            </select>
           </div>
-        </div>
-      </section>
-
-      <!-- Charts -->
-      <section class="grid gap-4 lg:grid-cols-2">
-        <!-- Sales Funnel -->
-        <div
-          class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
-        >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Sales Funnel</h2>
-              <p class="text-xs text-slate-400">
-                Lead girişi &gt; atanma &gt; arama &gt; randevu.
-              </p>
-            </div>
-          </div>
-          <div class="h-64">
-            <canvas id="funnelChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Agent Performance -->
-        <div
-          class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
-        >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Temsilci Performansı</h2>
-              <p class="text-xs text-slate-400">Toplam arama ve randevu sayısı.</p>
-            </div>
-          </div>
-          <div class="h-64">
-            <canvas id="agentChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Platform Distribution -->
-        <div
-          class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
-        >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Platform Dağılımı</h2>
-              <p class="text-xs text-slate-400">
-                Hangi reklam kanalı ne kadar lead üretiyor?
-              </p>
-            </div>
-          </div>
-          <div class="flex h-64 items-center gap-4">
-            <div class="h-full flex-1">
-              <canvas id="platformChart"></canvas>
-            </div>
-            <div class="w-32 space-y-2 text-xs text-slate-300" id="platformLegend"></div>
-          </div>
-        </div>
-
-        <!-- Time Analysis -->
-        <div
-          class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
-        >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Zaman Analizi</h2>
-              <p class="text-xs text-slate-400">Gün içi arama yoğunluğu (saat bazında).</p>
-            </div>
-          </div>
-          <div class="h-64">
-            <canvas id="timeChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Çağrı Süreleri -->
-        <div
-          class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:col-span-2"
-        >
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <h2 class="text-sm font-semibold text-slate-50">Çağrı Süreleri</h2>
-              <p class="text-xs text-slate-400">
-                1 dakika altı, 1–2 dk, 2–5 dk ve 5+ dakikalık çağrı dağılımı.
-              </p>
-            </div>
-          </div>
-          <div class="h-64">
-            <canvas id="durationChart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- Table -->
-      <section
-        class="mt-6 rounded-3xl bg-slate-950/70 p-3 ring-1 ring-slate-800/80 shadow-[0_24px_80px_rgba(15,23,42,1)] backdrop-blur-2xl"
-      >
-        <div class="mb-2 flex items-center justify-between gap-3 px-1">
           <div>
-            <h2 class="text-sm font-semibold text-slate-50">
-              Lead Listeleme &amp; Drill-down
-            </h2>
+            <label
+              class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+            >Proje</label>
+            <select
+              id="projectFilter"
+              class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            >
+              <option value="ALL">Tümü</option>
+            </select>
+          </div>
+          <div>
+            <label
+              class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+            >Platform</label>
+            <select
+              id="platformFilter"
+              class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            >
+              <option value="ALL">Tümü</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4">
+          <label
+            class="mb-1 block text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400"
+          >Hızlı Arama</label>
+          <div class="relative">
+            <input
+              id="searchInput"
+              placeholder="Müşteri, ID, temsilci, proje..."
+              class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/70 py-2 pl-8 pr-3 text-xs text-slate-100 placeholder:text-slate-500 shadow-inner focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
+            <span
+              class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+              >
+                <circle cx="11" cy="11" r="6" />
+                <line x1="16" y1="16" x2="21" y2="21" />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drilldown Status -->
+      <div
+        class="w-full rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:max-w-sm"
+      >
+        <h2 class="mb-3 text-sm font-semibold text-slate-50">Drill-down Durumu</h2>
+        <div class="space-y-2 text-xs text-slate-300">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Funnel</span>
+            <span
+              id="funnelStatus"
+              class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
+            >
+              Tümü
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Grafik Seçimi</span>
+            <span
+              id="chartStatus"
+              class="rounded-full bg-slate-800/90 px-3 py-1 text-[11px]"
+            >
+              Yok
+            </span>
+          </div>
+          <div
+            class="mt-3 rounded-2xl bg-gradient-to-r from-primary-500/20 via-emerald-500/10 to-sky-500/20 p-3 text-[11px] text-slate-100 ring-1 ring-primary-500/40"
+          >
+            Grafiklerin üzerine tıklayarak tabloyu filtreleyebilirsiniz.
+            <span class="font-medium text-primary-200">
+              Tek tık = filtrele, butonlar = sıfırla.
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid gap-4 lg:grid-cols-2">
+      <!-- Sales Funnel -->
+      <div
+        class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Sales Funnel</h2>
             <p class="text-xs text-slate-400">
-              <span id="rowCountText">0</span> kayıt görüntüleniyor. Satır üzerine gelerek
-              ek aksiyonları ortaya çıkarın.
+              Lead girişi &gt; atanma &gt; arama &gt; randevu.
             </p>
           </div>
-          <div class="flex items-center gap-2 text-[11px] text-slate-400">
-            <div class="flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-red-500"></span>
-              <span>Geçmiş follow-up</span>
-            </div>
-            <div class="flex items-center gap-1">
-              <span class="h-2 w-2 rounded-full bg-amber-400"></span>
-              <span>&gt;15dk SLA</span>
-            </div>
-          </div>
         </div>
-        <div
-          class="relative max-h-[430px] overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/90"
-        >
-          <div
-            class="scrollbar-thin scrollbar-thumb-slate-700 max-h-[430px] overflow-auto"
-          >
-            <table class="min-w-full text-left text-xs">
-              <thead
-                class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur"
-              >
-                <tr>
-                  <th class="px-3 py-2 font-medium text-slate-400">ID</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Müşteri</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Temsilci</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Proje</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Platform</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Atanma</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Arama</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">SLA (dk)</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Durum</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Lead Score</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Temsilci Score</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Bütçe</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Randevu Süresi (dk)</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Ret Nedeni</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Ses</th>
-                  <th class="px-3 py-2 font-medium text-slate-400">Not</th>
-                </tr>
-              </thead>
-              <tbody id="tableBody"></tbody>
-            </table>
-          </div>
+        <div class="h-64">
+          <canvas id="funnelChart"></canvas>
         </div>
-      </section>
-    </div>
-  </div>
+      </div>
 
-  <!-- Dashboard Script -->
-  <script>
-    // -------- Mock Data & Helpers --------
-    const AGENTS = ["Şükran Demir", "Sıla Babaliki", "Koray Yalçın"];
-    const PLATFORMS = ["FB", "IG", "Web"];
-    const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
-    const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
-    const LEAD_STATUS = ["Follow Up", "Randevu", "Ret"];
-    const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
-    const PLATFORM_COLORS = {
-      FB: "#3b82f6",
-      IG: "#ec4899",
-      Web: "#22c55e",
+      <!-- Agent Performance -->
+      <div
+        class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Temsilci Performansı</h2>
+            <p class="text-xs text-slate-400">Toplam arama ve randevu sayısı.</p>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="agentChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Platform Distribution -->
+      <div
+        class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Platform Dağılımı</h2>
+            <p class="text-xs text-slate-400">
+              Hangi reklam kanalı ne kadar lead üretiyor?
+            </p>
+          </div>
+        </div>
+        <div class="flex h-64 items-center gap-4">
+          <div class="h-full flex-1">
+            <canvas id="platformChart"></canvas>
+          </div>
+          <div class="w-32 space-y-2 text-xs text-slate-300" id="platformLegend"></div>
+        </div>
+      </div>
+
+      <!-- Time Analysis -->
+      <div
+        class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Zaman Analizi</h2>
+            <p class="text-xs text-slate-400">Gün içi arama yoğunluğu (saat bazında).</p>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="timeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Çağrı Süreleri -->
+      <div
+        class="rounded-3xl bg-slate-900/80 p-4 ring-1 ring-slate-800/80 shadow-[0_20px_60px_rgba(15,23,42,0.95)] backdrop-blur-xl lg:col-span-2"
+      >
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-50">Çağrı Süreleri</h2>
+            <p class="text-xs text-slate-400">
+              1 dakika altı, 1–2 dk, 2–5 dk ve 5+ dakikalık çağrı dağılımı.
+            </p>
+          </div>
+        </div>
+        <div class="h-64">
+          <canvas id="durationChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section
+      class="mt-6 rounded-3xl bg-slate-950/70 p-3 ring-1 ring-slate-800/80 shadow-[0_24px_80px_rgba(15,23,42,1)] backdrop-blur-2xl"
+    >
+      <div class="mb-2 flex items-center justify-between gap-3 px-1">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-50">
+            Lead Listeleme &amp; Drill-down
+          </h2>
+          <p class="text-xs text-slate-400">
+            <span id="rowCountText">0</span> kayıt görüntüleniyor. Satır üzerine gelerek
+            ek aksiyonları ortaya çıkarın.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-[11px] text-slate-400">
+          <div class="flex items-center gap-1">
+            <span class="h-2 w-2 rounded-full bg-red-500"></span>
+            <span>Geçmiş follow-up</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+            <span>&gt;15dk SLA</span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="relative max-h-[430px] overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/90"
+      >
+        <div
+          class="scrollbar-thin scrollbar-thumb-slate-700 max-h-[430px] overflow-auto"
+        >
+          <table class="min-w-full text-left text-xs">
+            <thead
+              class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur"
+            >
+              <tr>
+                <th class="px-3 py-2 font-medium text-slate-400">ID</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Müşteri</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Temsilci</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Proje</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Platform</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Atanma</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Arama</th>
+                <th class="px-3 py-2 font-medium text-slate-400">SLA (dk)</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Durum</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Lead Score</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Temsilci Score</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Bütçe</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Randevu Süresi (dk)</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Ret Nedeni</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Ses</th>
+                <th class="px-3 py-2 font-medium text-slate-400">Not</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Dashboard Script -->
+<script>
+  // -------- Mock Data & Helpers --------
+  const AGENTS = ["Şükran Demir", "Sıla Babaliki", "Koray Yalçın"];
+  const PLATFORMS = ["FB", "IG", "Web"];
+  const PROJECTS = ["Dolce Mare", "Dolce Vita", "Sea Front"];
+  const CALL_STATUS = ["Arandı", "No Response 1", "No Response 2", "No Response 3"];
+  const LEAD_STATUS = ["Follow Up", "Randevu", "Ret"];
+  const REJECTION_REASONS = ["Fiyat", "Konum", "İlgilenmiyor", "Bütçe Dışı"];
+  const PLATFORM_COLORS = {
+    FB: "#3b82f6",
+    IG: "#ec4899",
+    Web: "#22c55e",
+  };
+
+  function randomChoice(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function addMinutes(date, minutes) {
+    return new Date(date.getTime() + minutes * 60000);
+  }
+
+  function formatDate(date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  function formatTime(date) {
+    return date.toTimeString().slice(0, 5);
+  }
+
+  function diffInMinutes(a, b) {
+    return Math.round((b.getTime() - a.getTime()) / 60000);
+  }
+
+  // Elle yazdığın 8 kayıt + üstüne 142 otomatik kayıt = 150 lead
+  const BASE_DATA = [
+    {
+      id: 1,
+      createdAt: new Date("2025-01-10T09:15:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-10T09:20:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "09:20",
+      customerName: "Ali Yılmaz",
+      platform: "FB",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-10T09:25:00"),
+      callTimeStr: "09:25",
+      callStatus: "Arandı",
+      callDuration: 180,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "İkinci aramada randevu aldı.",
+      hasRecording: true,
+    },
+    {
+      id: 2,
+      createdAt: new Date("2025-01-10T09:30:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-10T09:35:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "09:35",
+      customerName: "Ayşe Demir",
+      platform: "IG",
+      project: "Dolce Vita",
+      callAt: new Date("2025-01-10T09:50:00"),
+      callTimeStr: "09:50",
+      callStatus: "Arandı",
+      callDuration: 240,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Lead randevuya dönüştürüldü.",
+      hasRecording: true,
+    },
+    {
+      id: 3,
+      createdAt: new Date("2025-01-10T10:00:00"),
+      createdAtStr: "2025-01-10",
+      agent: "Koray Yalçın",
+      assignedAt: new Date("2025-01-10T10:05:00"),
+      assignedDateStr: "2025-01-10",
+      assignedTimeStr: "10:05",
+      customerName: "Mehmet Kara",
+      platform: "Web",
+      project: "Sea Front",
+      callAt: new Date("2025-01-10T10:40:00"),
+      callTimeStr: "10:40",
+      callStatus: "No Response 1",
+      callDuration: 0,
+      leadStatus: "Follow Up",
+      rejectionReason: "",
+      notes: "İlk aramada ulaşılmadı, tekrar aranacak.",
+      hasRecording: false,
+    },
+    {
+      id: 4,
+      createdAt: new Date("2025-01-09T11:15:00"),
+      createdAtStr: "2025-01-09",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-09T11:25:00"),
+      assignedDateStr: "2025-01-09",
+      assignedTimeStr: "11:25",
+      customerName: "Zeynep Yalçın",
+      platform: "FB",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-09T11:50:00"),
+      callTimeStr: "11:50",
+      callStatus: "Arandı",
+      callDuration: 200,
+      leadStatus: "Ret",
+      rejectionReason: "Fiyat",
+      notes: "Bütçe sebebiyle ilgilenmiyor.",
+      hasRecording: true,
+    },
+    {
+      id: 5,
+      createdAt: new Date("2025-01-08T12:05:00"),
+      createdAtStr: "2025-01-08",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-08T12:10:00"),
+      assignedDateStr: "2025-01-08",
+      assignedTimeStr: "12:10",
+      customerName: "Can Arslan",
+      platform: "IG",
+      project: "Sea Front",
+      callAt: new Date("2025-01-08T12:20:00"),
+      callTimeStr: "12:20",
+      callStatus: "Arandı",
+      callDuration: 150,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Cumartesi 14:00 için randevu verildi.",
+      hasRecording: true,
+    },
+    {
+      id: 6,
+      createdAt: new Date("2025-01-08T13:00:00"),
+      createdAtStr: "2025-01-08",
+      agent: "Koray Yalçın",
+      assignedAt: new Date("2025-01-08T13:05:00"),
+      assignedDateStr: "2025-01-08",
+      assignedTimeStr: "13:05",
+      customerName: "Elif Aksoy",
+      platform: "Web",
+      project: "Dolce Vita",
+      callAt: new Date("2025-01-08T13:08:00"),
+      callTimeStr: "13:08",
+      callStatus: "Arandı",
+      callDuration: 90,
+      leadStatus: "Randevu",
+      rejectionReason: "",
+      notes: "Lead randevuya dönüştürüldü.",
+      hasRecording: true,
+    },
+    {
+      id: 7,
+      createdAt: new Date("2025-01-07T15:20:00"),
+      createdAtStr: "2025-01-07",
+      agent: "Şükran Demir",
+      assignedAt: new Date("2025-01-07T15:30:00"),
+      assignedDateStr: "2025-01-07",
+      assignedTimeStr: "15:30",
+      customerName: "Burak Sezer",
+      platform: "FB",
+      project: "Sea Front",
+      callAt: new Date("2025-01-07T16:20:00"),
+      callTimeStr: "16:20",
+      callStatus: "No Response 3",
+      callDuration: 0,
+      leadStatus: "Ret",
+      rejectionReason: "İlgilenmiyor",
+      notes: "3 kez aranmasına rağmen ulaşılmadı.",
+      hasRecording: false,
+    },
+    {
+      id: 8,
+      createdAt: new Date("2025-01-06T10:45:00"),
+      createdAtStr: "2025-01-06",
+      agent: "Sıla Babaliki",
+      assignedAt: new Date("2025-01-06T11:00:00"),
+      assignedDateStr: "2025-01-06",
+      assignedTimeStr: "11:00",
+      customerName: "Deniz Kaya",
+      platform: "IG",
+      project: "Dolce Mare",
+      callAt: new Date("2025-01-06T11:20:00"),
+      callTimeStr: "11:20",
+      callStatus: "Arandı",
+      callDuration: 210,
+      leadStatus: "Follow Up",
+      rejectionReason: "",
+      notes: "Karar için bir hafta süre istedi.",
+      hasRecording: true,
+    },
+  ];
+
+  // otomatik ek lead'lerle toplam 150'ye tamamla
+  const MOCK_DATA = (() => {
+    const base = new Date();
+    const data = BASE_DATA.map((row) => {
+      const randevuSuresi =
+        row.leadStatus === "Randevu"
+          ? diffInMinutes(row.createdAt, row.callAt)
+          : null;
+
+      const budget = 700000;
+      const leadScore = row.leadStatus === "Randevu" ? 80 : 60;
+      const agentScore = row.agent === "Sıla Babaliki" ? 88 : row.agent === "Şükran Demir" ? 85 : 82;
+
+      return {
+        ...row,
+        budget,
+        leadScore,
+        agentScore,
+        randevuSuresi,
+      };
+    });
+
+    const startId = data.length + 1;
+    const totalLeads = 150;
+    const agentBaseScores = {
+      "Şükran Demir": 85,
+      "Sıla Babaliki": 88,
+      "Koray Yalçın": 82,
     };
 
-    function randomChoice(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
+    for (let i = startId; i <= totalLeads; i++) {
+      const createdAt = new Date(
+        base.getFullYear(),
+        base.getMonth(),
+        base.getDate() - ((i - 1) % 3),
+        9 + (i % 8),
+        (i * 7) % 60
+      );
 
-    function addMinutes(date, minutes) {
-      return new Date(date.getTime() + minutes * 60000);
-    }
+      const agent = AGENTS[(i - 1) % AGENTS.length];
+      const platform = PLATFORMS[(i - 1) % PLATFORMS.length];
+      const project = PROJECTS[(i - 1) % PROJECTS.length];
 
-    function formatDate(date) {
-      return date.toISOString().slice(0, 10);
-    }
+      const assignedAt = addMinutes(createdAt, 5 + (i % 20));
+      const callAt = addMinutes(assignedAt, (i * 2) % 40);
 
-    function formatTime(date) {
-      return date.toTimeString().slice(0, 5);
-    }
-
-    function diffInMinutes(a, b) {
-      return Math.round((b.getTime() - a.getTime()) / 60000);
-    }
-
-    // 150 lead: 3 temsilciye 50'şer eşit dağılım + skorlar + bütçe + randevu süresi
-    const MOCK_DATA = (() => {
-      const base = new Date();
-      const data = [];
-      const totalLeads = 150;
-
-      const agentBaseScores = {
-        "Şükran Demir": 85,
-        "Sıla Babaliki": 88,
-        "Koray Yalçın": 82,
-      };
-
-      for (let i = 0; i < totalLeads; i++) {
-        const id = i + 1;
-
-        const createdAt = new Date(
-          base.getFullYear(),
-          base.getMonth(),
-          base.getDate() - (i % 3),
-          9 + (i % 8),
-          (i * 7) % 60
-        );
-
-        const agent = AGENTS[i % AGENTS.length];
-        const platform = PLATFORMS[i % PLATFORMS.length];
-        const project = PROJECTS[i % PROJECTS.length];
-
-        const assignedAt = addMinutes(createdAt, 5 + (i % 20));
-        const callAt = addMinutes(assignedAt, (i * 2) % 40);
-
-        const callStatus = randomChoice(CALL_STATUS);
-        let leadStatus;
-        if (callStatus.startsWith("No Response")) {
-          leadStatus = randomChoice(["Follow Up", "Ret"]);
-        } else {
-          leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
-        }
-
-        let rejectionReason = "";
-        if (leadStatus === "Ret") {
-          rejectionReason = randomChoice(REJECTION_REASONS);
-        }
-
-        let callDuration = 0;
-        if (callStatus === "Arandı") {
-          const buckets = [
-            [20, 59],
-            [60, 119],
-            [120, 299],
-            [300, 600],
-          ];
-          const b = buckets[i % buckets.length];
-          callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
-        }
-
-        const budget = 500000 + (i % 15) * 100000;
-
-        let leadScore =
-          40 +
-          (budget / 1000000) * 15 +
-          (leadStatus === "Randevu" ? 25 : 0) -
-          (callStatus.startsWith("No Response") ? 10 : 0);
-        leadScore = Math.max(0, Math.min(100, Math.round(leadScore)));
-
-        let agentScore = (agentBaseScores[agent] || 80) + (i % 5) - 2;
-        agentScore = Math.max(60, Math.min(100, agentScore));
-
-        const randevuSuresi =
-          leadStatus === "Randevu" ? diffInMinutes(createdAt, callAt) : null;
-
-        data.push({
-          id,
-          createdAt,
-          createdAtStr: formatDate(createdAt),
-          agent,
-          assignedAt,
-          assignedDateStr: formatDate(assignedAt),
-          assignedTimeStr: formatTime(assignedAt),
-          customerName: `Müşteri ${id}`,
-          platform,
-          project,
-          callAt,
-          callTimeStr: formatTime(callAt),
-          callStatus,
-          callDuration,
-          leadStatus,
-          rejectionReason,
-          notes:
-            leadStatus === "Randevu"
-              ? "Lead randevuya dönüştürüldü."
-              : leadStatus === "Follow Up"
-              ? "Lead üzerinde tekrar çalışma planlanıyor."
-              : rejectionReason
-              ? `Ret nedeni: ${rejectionReason}.`
-              : "Genel not yok.",
-          hasRecording: callDuration > 0,
-          leadScore,
-          agentScore,
-          budget,
-          randevuSuresi,
-        });
+      const callStatus = randomChoice(CALL_STATUS);
+      let leadStatus;
+      if (callStatus.startsWith("No Response")) {
+        leadStatus = randomChoice(["Follow Up", "Ret"]);
+      } else {
+        leadStatus = i % 5 === 0 ? "Ret" : "Randevu";
       }
 
-      return data;
-    })();
+      let rejectionReason = "";
+      if (leadStatus === "Ret") {
+        rejectionReason = randomChoice(REJECTION_REASONS);
+      }
 
-    const now = new Date();
+      let callDuration = 0;
+      if (callStatus === "Arandı") {
+        const buckets = [
+          [20, 59],
+          [60, 119],
+          [120, 299],
+          [300, 600],
+        ];
+        const b = buckets[i % buckets.length];
+        callDuration = b[0] + Math.floor(Math.random() * (b[1] - b[0]));
+      }
 
-    // -------- Global State --------
-    const state = {
-      agent: "ALL",
-      project: "ALL",
-      platform: "ALL",
-      funnelStage: null,
-      chartFilter: null,
-      search: "",
-    };
+      const budget = 500000 + ((i - 1) % 15) * 100000;
 
-    // -------- DOM Elements --------
-    const agentFilterEl = document.getElementById("agentFilter");
-    const projectFilterEl = document.getElementById("projectFilter");
-    const platformFilterEl = document.getElementById("platformFilter");
-    const searchInputEl = document.getElementById("searchInput");
-    const resetFiltersBtn = document.getElementById("resetFiltersBtn");
-    const resetDrilldownBtn = document.getElementById("resetDrilldownBtn");
-    const funnelStatusEl = document.getElementById("funnelStatus");
-    const chartStatusEl = document.getElementById("chartStatus");
-    const rowCountTextEl = document.getElementById("rowCountText");
-    const kpiCardsEl = document.getElementById("kpiCards");
-    const platformLegendEl = document.getElementById("platformLegend");
-    const summaryTextEl = document.getElementById("summaryText");
-    const summaryBadgeEl = document.getElementById("summaryBadge");
-    const tableBodyEl = document.getElementById("tableBody");
+      let leadScore =
+        40 +
+        (budget / 1000000) * 15 +
+        (leadStatus === "Randevu" ? 25 : 0) -
+        (callStatus.startsWith("No Response") ? 10 : 0);
+      leadScore = Math.max(0, Math.min(100, Math.round(leadScore)));
 
-    // -------- Filters Setup --------
-    function fillSelectOptions(select, options) {
-      options.forEach((v) => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        select.appendChild(opt);
-      });
-    }
-    fillSelectOptions(agentFilterEl, AGENTS);
-    fillSelectOptions(projectFilterEl, PROJECTS);
-    fillSelectOptions(platformFilterEl, PLATFORMS);
+      let agentScore = (agentBaseScores[agent] || 80) + (i % 5) - 2;
+      agentScore = Math.max(60, Math.min(100, agentScore));
 
-    // -------- Filtering --------
-    function applyFilters() {
-      return MOCK_DATA.filter((row) => {
-        if (state.agent !== "ALL" && row.agent !== state.agent) return false;
-        if (state.project !== "ALL" && row.project !== state.project) return false;
-        if (state.platform !== "ALL" && row.platform !== state.platform) return false;
+      const randevuSuresi =
+        leadStatus === "Randevu" ? diffInMinutes(createdAt, callAt) : null;
 
-        if (state.funnelStage) {
-          const s = state.funnelStage;
-          if (s === "Lead Girişi") {
-          } else if (s === "Atanmış" && !row.assignedAt) return false;
-          else if (s === "Arandı" && row.callStatus !== "Arandı") return false;
-          else if (s === "Randevu" && row.leadStatus !== "Randevu") return false;
-        }
-
-        if (state.chartFilter) {
-          const f = state.chartFilter;
-          if (f.type === "agent" && row.agent !== f.value) return false;
-          if (f.type === "platform" && row.platform !== f.value) return false;
-          if (f.type === "hour" && row.callAt?.getHours() !== f.value) return false;
-        }
-
-        if (state.search.trim()) {
-          const q = state.search.toLowerCase();
-          const target = (
-            row.customerName +
-            " " +
-            row.id +
-            " " +
-            row.agent +
-            " " +
-            row.project +
-            " " +
-            row.platform
-          ).toLowerCase();
-          if (!target.includes(q)) return false;
-        }
-
-        return true;
+      data.push({
+        id: i,
+        createdAt,
+        createdAtStr: formatDate(createdAt),
+        agent,
+        assignedAt,
+        assignedDateStr: formatDate(assignedAt),
+        assignedTimeStr: formatTime(assignedAt),
+        customerName: `Müşteri ${i}`,
+        platform,
+        project,
+        callAt,
+        callTimeStr: formatTime(callAt),
+        callStatus,
+        callDuration,
+        leadStatus,
+        rejectionReason,
+        notes:
+          leadStatus === "Randevu"
+            ? "Lead randevuya dönüştürüldü."
+            : leadStatus === "Follow Up"
+            ? "Lead üzerinde tekrar çalışma planlanıyor."
+            : rejectionReason
+            ? `Ret nedeni: ${rejectionReason}.`
+            : "Genel not yok.",
+        hasRecording: callDuration > 0,
+        budget,
+        leadScore,
+        agentScore,
+        randevuSuresi,
       });
     }
 
-    // -------- KPI Cards --------
-    function renderKpiCards(filtered) {
-      const total = filtered.length;
-      const appointments = filtered.filter((r) => r.leadStatus === "Randevu").length;
-      const conv = total ? ((appointments / total) * 100).toFixed(1) + "%" : "-";
+    return data;
+  })();
 
-      let sumSla = 0;
-      let countSla = 0;
-      let over15 = 0;
-      filtered.forEach((r) => {
-        if (r.assignedAt && r.callAt) {
-          const d = diffInMinutes(r.assignedAt, r.callAt);
-          sumSla += d;
-          countSla++;
-          if (d > 15) over15++;
-        }
-      });
-      const avgSla = countSla ? (sumSla / countSla).toFixed(1) : "-";
-      const overRate = countSla ? Math.round((over15 / countSla) * 100) : 0;
+  const now = new Date();
 
-      const totalCalls = filtered.filter((r) => r.callStatus).length;
-      const successfulCalls = filtered.filter((r) => r.callStatus === "Arandı").length;
-      const successRate = totalCalls
-        ? ((successfulCalls / totalCalls) * 100).toFixed(1) + "%"
-        : "-";
+  // -------- Global State --------
+  const state = {
+    agent: "ALL",
+    project: "ALL",
+    platform: "ALL",
+    funnelStage: null,
+    chartFilter: null,
+    search: "",
+  };
 
-      const lostLeads = filtered.filter(
-        (r) => r.leadStatus === "Ret" || r.callStatus === "No Response 3"
-      ).length;
+  // -------- DOM Elements --------
+  const agentFilterEl = document.getElementById("agentFilter");
+  const projectFilterEl = document.getElementById("projectFilter");
+  const platformFilterEl = document.getElementById("platformFilter");
+  const searchInputEl = document.getElementById("searchInput");
+  const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+  const resetDrilldownBtn = document.getElementById("resetDrilldownBtn");
+  const funnelStatusEl = document.getElementById("funnelStatus");
+  const chartStatusEl = document.getElementById("chartStatus");
+  const rowCountTextEl = document.getElementById("rowCountText");
+  const kpiCardsEl = document.getElementById("kpiCards");
+  const platformLegendEl = document.getElementById("platformLegend");
+  const summaryTextEl = document.getElementById("summaryText");
+  const summaryBadgeEl = document.getElementById("summaryBadge");
+  const tableBodyEl = document.getElementById("tableBody");
 
-      const cards = [
-        {
-          label: "Ort. Lead Yanıtlama Hızı (SLA)",
-          value: avgSla === "-" ? "-" : avgSla + " dk",
-          helper: avgSla === "-" ? "Yeterli veri yok" : `>%15 SLA: ${overRate}%`,
-          tone:
-            avgSla !== "-" && parseFloat(avgSla) > 15
-              ? "danger"
-              : "success",
-        },
-        {
-          label: "Randevuya Dönüşüm Oranı",
-          value: conv,
-          helper: `${appointments} randevu / ${total} lead`,
-          tone: "neutral",
-        },
-        {
-          label: "Toplam Arama & Başarılı Arama",
-          value: totalCalls ? `${totalCalls} arama` : "Veri yok",
-          helper: `Arandı % ${successRate}`,
-          tone: "success",
-        },
-        {
-          label: "Kayıp / Niteliksiz Lead",
-          value: lostLeads,
-          helper: "Ret + 3. no-response",
-          tone: lostLeads > 0 ? "danger" : "neutral",
-        },
-      ];
+  // -------- Filters Setup --------
+  function fillSelectOptions(select, options) {
+    options.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      select.appendChild(opt);
+    });
+  }
+  fillSelectOptions(agentFilterEl, AGENTS);
+  fillSelectOptions(projectFilterEl, PROJECTS);
+  fillSelectOptions(platformFilterEl, PLATFORMS);
 
-      kpiCardsEl.innerHTML = "";
-      cards.forEach((c) => {
-        const toneClasses =
-          c.tone === "danger"
-            ? "bg-red-500/10 text-red-300 ring-red-500/40"
-            : c.tone === "success"
-            ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/40"
-            : "bg-primary-500/10 text-primary-200 ring-primary-500/40";
+  // -------- Filtering --------
+  function applyFilters() {
+    return MOCK_DATA.filter((row) => {
+      if (state.agent !== "ALL" && row.agent !== state.agent) return false;
+      if (state.project !== "ALL" && row.project !== state.project) return false;
+      if (state.platform !== "ALL" && row.platform !== state.platform) return false;
 
-        const card = document.createElement("div");
-        card.className =
-          "rounded-3xl bg-slate-900/80 ring-1 ring-slate-700/60 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-xl";
-        card.innerHTML = `
-           <div class="flex items-center justify-between gap-3">
-             <div>
-               <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                 ${c.label}
-               </p>
-               <p class="mt-2 text-2xl font-semibold ${toneClasses.split(" ")[1]}">
-                 ${c.value}
-               </p>
-             </div>
-             <div class="inline-flex items-center justify-center rounded-2xl px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em] ${toneClasses}">
-               ${c.helper}
-             </div>
-           </div>`;
-        kpiCardsEl.appendChild(card);
-      });
-    }
+      if (state.funnelStage) {
+        const s = state.funnelStage;
+        if (s === "Lead Girişi") {
+        } else if (s === "Atanmış" && !row.assignedAt) return false;
+        else if (s === "Arandı" && row.callStatus !== "Arandı") return false;
+        else if (s === "Randevu" && row.leadStatus !== "Randevu") return false;
+      }
 
-    // -------- Charts --------
-    let funnelChart, agentChart, platformChart, timeChart, durationChart;
+      if (state.chartFilter) {
+        const f = state.chartFilter;
+        if (f.type === "agent" && row.agent !== f.value) return false;
+        if (f.type === "platform" && row.platform !== f.value) return false;
+        if (f.type === "hour" && row.callAt?.getHours() !== f.value) return false;
+      }
 
-    function buildFunnelData(filtered) {
-      const total = filtered.length;
-      const assigned = filtered.filter((r) => r.assignedAt).length;
-      const called = filtered.filter((r) => r.callStatus === "Arandı").length;
-      const appointment = filtered.filter((r) => r.leadStatus === "Randevu").length;
-      return {
-        labels: ["Lead Girişi", "Atanmış", "Arandı", "Randevu"],
-        values: [total, assigned, called, appointment],
-      };
-    }
+      if (state.search.trim()) {
+        const q = state.search.toLowerCase();
+        const target = (
+          row.customerName +
+          " " +
+          row.id +
+          " " +
+          row.agent +
+          " " +
+          row.project +
+          " " +
+          row.platform
+        ).toLowerCase();
+        if (!target.includes(q)) return false;
+      }
 
-    function buildAgentData(filtered) {
-      return AGENTS.map((a) => {
-        const rows = filtered.filter((r) => r.agent === a);
-        return {
-          agent: a,
-          totalCalls: rows.filter((r) => r.callStatus).length,
-          appointments: rows.filter((r) => r.leadStatus === "Randevu").length,
-        };
-      });
-    }
+      return true;
+    });
+  }
 
-    function buildPlatformData(filtered) {
-      return PLATFORMS.map((p) => ({
-        platform: p,
-        value: filtered.filter((r) => r.platform === p).length,
-      })).filter((d) => d.value > 0);
-    }
+  // -------- KPI Cards --------
+  function renderKpiCards(filtered) {
+    const total = filtered.length;
+    const appointments = filtered.filter((r) => r.leadStatus === "Randevu").length;
+    const conv = total ? ((appointments / total) * 100).toFixed(1) + "%" : "-";
 
-    function buildTimeData(filtered) {
-      const buckets = {};
-      filtered.forEach((r) => {
-        if (!r.callAt) return;
-        const h = r.callAt.getHours();
-        const label = String(h).padStart(2, "0") + ":00";
-        if (!buckets[h]) buckets[h] = { hour: h, label, calls: 0 };
-        buckets[h].calls++;
-      });
-      return Object.values(buckets).sort((a, b) => a.hour - b.hour);
-    }
+    let sumSla = 0;
+    let countSla = 0;
+    let over15 = 0;
+    filtered.forEach((r) => {
+      if (r.assignedAt && r.callAt) {
+        const d = diffInMinutes(r.assignedAt, r.callAt);
+        sumSla += d;
+        countSla++;
+        if (d > 15) over15++;
+      }
+    });
+    const avgSla = countSla ? (sumSla / countSla).toFixed(1) : "-";
+    const overRate = countSla ? Math.round((over15 / countSla) * 100) : 0;
 
-    function buildDurationData(filtered) {
-      const buckets = {
-        "<1 dk": 0,
-        "1–2 dk": 0,
-        "2–5 dk": 0,
-        "5+ dk": 0,
-      };
+    const totalCalls = filtered.filter((r) => r.callStatus).length;
+    const successfulCalls = filtered.filter((r) => r.callStatus === "Arandı").length;
+    const successRate = totalCalls
+      ? ((successfulCalls / totalCalls) * 100).toFixed(1) + "%"
+      : "-";
 
-      filtered.forEach((r) => {
-        const d = r.callDuration || 0;
-        if (d === 0) return;
-        if (d < 60) buckets["<1 dk"]++;
-        else if (d < 120) buckets["1–2 dk"]++;
-        else if (d < 300) buckets["2–5 dk"]++;
-        else buckets["5+ dk"]++;
-      });
+    const lostLeads = filtered.filter(
+      (r) => r.leadStatus === "Ret" || r.callStatus === "No Response 3"
+    ).length;
 
-      return {
-        labels: Object.keys(buckets),
-        values: Object.values(buckets),
-      };
-    }
-
-    function destroyChart(ch) {
-      if (ch) ch.destroy();
-    }
-
-    function renderCharts(filtered) {
-      const funnel = buildFunnelData(filtered);
-      const agents = buildAgentData(filtered);
-      const platforms = buildPlatformData(filtered);
-      const times = buildTimeData(filtered);
-      const durations = buildDurationData(filtered);
-
-      // Funnel chart
-      destroyChart(funnelChart);
-      const ctxFunnel = document.getElementById("funnelChart").getContext("2d");
-      funnelChart = new Chart(ctxFunnel, {
-        type: "bar",
-        data: {
-          labels: funnel.labels,
-          datasets: [
-            {
-              label: "Adet",
-              data: funnel.values,
-              backgroundColor: funnel.labels.map((_, i) =>
-                i === 0
-                  ? "rgba(59,130,246,0.6)"
-                  : i === funnel.labels.length - 1
-                  ? "rgba(34,197,94,0.7)"
-                  : "rgba(99,102,241,0.6)"
-              ),
-            },
-          ],
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-            y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          },
-          onClick(_, elements) {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const stage = funnel.labels[index];
-            state.funnelStage = state.funnelStage === stage ? null : stage;
-            funnelStatusEl.textContent = state.funnelStage || "Tümü";
-            renderAll();
-          },
-        },
-      });
-
-      // Agent chart
-      destroyChart(agentChart);
-      const ctxAgent = document.getElementById("agentChart").getContext("2d");
-      agentChart = new Chart(ctxAgent, {
-        type: "bar",
-        data: {
-          labels: agents.map((a) => a.agent),
-          datasets: [
-            {
-              label: "Toplam Arama",
-              data: agents.map((a) => a.totalCalls),
-              backgroundColor: "rgba(59,130,246,0.6)",
-            },
-            {
-              label: "Randevu",
-              data: agents.map((a) => a.appointments),
-              backgroundColor: "rgba(34,197,94,0.7)",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              labels: { color: "#cbd5f5", font: { size: 11 } },
-            },
-          },
-          scales: {
-            x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-            y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          },
-          onClick(_, elements) {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const agent = agents[index].agent;
-            const current = state.chartFilter;
-            if (current && current.type === "agent" && current.value === agent) {
-              state.chartFilter = null;
-            } else {
-              state.chartFilter = { type: "agent", value: agent };
-            }
-            chartStatusEl.textContent = state.chartFilter
-              ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-              : "Yok";
-            renderAll();
-          },
-        },
-      });
-
-      // Platform chart
-      destroyChart(platformChart);
-      const ctxPlatform = document.getElementById("platformChart").getContext("2d");
-      platformChart = new Chart(ctxPlatform, {
-        type: "pie",
-        data: {
-          labels: platforms.map((p) => p.platform),
-          datasets: [
-            {
-              data: platforms.map((p) => p.value),
-              backgroundColor: platforms.map(
-                (p) => PLATFORM_COLORS[p.platform] || "#6366f1"
-              ),
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true },
-          },
-          onClick(_, elements) {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const platform = platforms[index].platform;
-            const current = state.chartFilter;
-            if (
-              current &&
-              current.type === "platform" &&
-              current.value === platform
-            ) {
-              state.chartFilter = null;
-            } else {
-              state.chartFilter = { type: "platform", value: platform };
-            }
-            chartStatusEl.textContent = state.chartFilter
-              ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-              : "Yok";
-            renderAll();
-          },
-        },
-      });
-
-      // Platform legend
-      platformLegendEl.innerHTML = "";
-      platforms.forEach((p) => {
-        const row = document.createElement("div");
-        row.className = "flex items-center justify-between gap-2";
-        row.innerHTML = `
-           <div class="flex items-center gap-1.5">
-             <span class="h-2 w-2 rounded-full" style="background:${
-               PLATFORM_COLORS[p.platform]
-             }"></span>
-             <span>${p.platform}</span>
-           </div>
-           <span class="text-slate-400">${p.value}</span>`;
-        platformLegendEl.appendChild(row);
-      });
-
-      // Time chart
-      destroyChart(timeChart);
-      const ctxTime = document.getElementById("timeChart").getContext("2d");
-      timeChart = new Chart(ctxTime, {
-        type: "line",
-        data: {
-          labels: times.map((t) => t.label),
-          datasets: [
-            {
-              label: "Arama Sayısı",
-              data: times.map((t) => t.calls),
-              borderColor: "#38bdf8",
-              backgroundColor: "rgba(56,189,248,0.3)",
-              tension: 0.3,
-              pointRadius: 3,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-            y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          },
-          onClick(_, elements) {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const hour = times[index].hour;
-            const current = state.chartFilter;
-            if (current && current.type === "hour" && current.value === hour) {
-              state.chartFilter = null;
-            } else {
-              state.chartFilter = { type: "hour", value: hour };
-            }
-            chartStatusEl.textContent = state.chartFilter
-              ? `${state.chartFilter.type}: ${state.chartFilter.value}`
-              : "Yok";
-            renderAll();
-          },
-        },
-      });
-
-      // Duration chart
-      destroyChart(durationChart);
-      const ctxDuration = document.getElementById("durationChart").getContext("2d");
-      durationChart = new Chart(ctxDuration, {
-        type: "bar",
-        data: {
-          labels: durations.labels,
-          datasets: [
-            {
-              label: "Çağrı Sayısı",
-              data: durations.values,
-              backgroundColor: [
-                "rgba(56,189,248,0.7)",
-                "rgba(34,197,94,0.7)",
-                "rgba(250,204,21,0.8)",
-                "rgba(239,68,68,0.8)",
-              ],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
-            tooltip: { enabled: true },
-          },
-          scales: {
-            x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-            y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          },
-        },
-      });
-    }
-
-    // -------- Table --------
-    function renderTable(filtered) {
-      tableBodyEl.innerHTML = "";
-      const followUpOverdueIds = new Set(
-        filtered
-          .filter(
-            (r) =>
-              r.leadStatus === "Follow Up" &&
-              diffInMinutes(r.createdAt, now) > 24 * 60
-          )
-          .map((r) => r.id)
-      );
-      rowCountTextEl.textContent = filtered.length;
-
-      filtered.forEach((row) => {
-        const tr = document.createElement("tr");
-        const sla =
-          row.assignedAt && row.callAt
-            ? diffInMinutes(row.assignedAt, row.callAt)
-            : null;
-        const slaBad = sla !== null && sla > 15;
-        const overdue = followUpOverdueIds.has(row.id);
-        tr.className =
-          "border-t border-slate-800/80 transition-colors " +
-          (overdue
-            ? "bg-red-950/40"
-            : "hover:bg-slate-900/50");
-
-        tr.innerHTML = `
-        <td class="whitespace-nowrap px-3 py-2 text-slate-300">#${row.id}</td>
-        <td class="max-w-[160px] truncate px-3 py-2 text-slate-100">
-          ${row.customerName}
-          <div class="mt-0.5 text-[10px] text-slate-500">${row.createdAtStr}</div>
-        </td>
-        <td class="px-3 py-2 text-slate-200">${row.agent}</td>
-        <td class="px-3 py-2 text-slate-200">${row.project}</td>
-        <td class="px-3 py-2">
-          <span
-            class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style="background:${(PLATFORM_COLORS[row.platform] || "#64748b") +
-              "22"};color:${PLATFORM_COLORS[row.platform] || "#64748b"}"
-          >
-            ${row.platform}
-          </span>
-        </td>
-        <td class="px-3 py-2">
-          <div class="text-slate-200">${row.assignedDateStr}</div>
-          <div class="text-[10px] text-slate-500">${row.assignedTimeStr}</div>
-        </td>
-        <td class="px-3 py-2">
-          <div class="text-slate-200">${row.callTimeStr}</div>
-          <div class="text-[10px] text-slate-500">${row.callStatus}</div>
-        </td>
-        <td class="px-3 py-2">
-          ${
-            sla !== null
-              ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  slaBad
-                    ? "bg-red-500/20 text-red-200"
-                    : "bg-emerald-500/20 text-emerald-200"
-                }">${sla} dk</span>`
-              : `<span class="text-[11px] text-slate-500">-</span>`
-          }
-        </td>
-        <td class="px-3 py-2">
-          <div class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-            row.leadStatus === "Randevu"
-              ? "bg-sky-500/20 text-sky-200"
-              : row.leadStatus === "Follow Up"
-              ? overdue
-                ? "bg-red-500/20 text-red-200"
-                : "bg-amber-500/20 text-amber-200"
-              : "bg-slate-700/50 text-slate-200"
-          }">
-            ${row.leadStatus}
-          </div>
-        </td>
-        <td class="px-3 py-2">
-          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-            row.leadScore >= 80
-              ? "bg-emerald-500/20 text-emerald-200"
-              : row.leadScore >= 60
-              ? "bg-sky-500/20 text-sky-200"
-              : "bg-slate-700/50 text-slate-200"
-          }">
-            ${row.leadScore}
-          </span>
-        </td>
-        <td class="px-3 py-2">
-          <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-            row.agentScore >= 85
-              ? "bg-emerald-500/20 text-emerald-200"
-              : row.agentScore >= 75
-              ? "bg-sky-500/20 text-sky-200"
-              : "bg-slate-700/50 text-slate-200"
-          }">
-            ${row.agentScore}
-          </span>
-        </td>
-        <td class="px-3 py-2 text-slate-200">
-          ₺${(row.budget / 1000).toLocaleString("tr-TR")}K
-        </td>
-        <td class="px-3 py-2 text-slate-200">
-          ${
-            row.randevuSuresi != null
-              ? `${row.randevuSuresi} dk`
-              : '<span class="text-slate-500">-</span>'
-          }
-        </td>
-        <td class="px-3 py-2 text-slate-300">
-          ${row.rejectionReason || '<span class="text-slate-500">-</span>'}
-        </td>
-        <td class="px-3 py-2 text-center">
-          <button
-            class="inline-flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
-              row.hasRecording
-                ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-200"
-                : "border-slate-700/80 bg-slate-900 text-slate-500"
-            }"
-            title="${
-              row.hasRecording
-                ? "Ses kaydını dinle (simülasyon)"
-                : "Ses kaydı yok"
-            }"
-          >
-            &#127908;
-          </button>
-        </td>
-        <td class="px-3 py-2 text-center">
-          <button
-            class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700/80 bg-slate-900 text-[11px] text-slate-300 hover:border-primary-500/
+    const cards = [
+      {
+        label: "Ort. Lead Yanıtlama Hızı (SLA)",
+        value: avgSla === "-" ? "-" : avgSla + " dk",
+        helper: avgSla === "-" ? "Yeterli veri yok" : `>%15 SLA: ${overRate}%`,
+        tone:
