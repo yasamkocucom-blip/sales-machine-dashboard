@@ -427,20 +427,20 @@
     return Math.round((b.getTime() - a.getTime()) / 60000);
   }
 
-  // Elle yazdığın 8 kayıt + üstüne 142 otomatik kayıt = 150 lead
+  // Elle yazdığın 8 kayıt + otomatik üretimle 1000 lead
   const BASE_DATA = [
     {
       id: 1,
-      createdAt: new Date("2025-01-10T09:15:00"),
-      createdAtStr: "2025-01-10",
+      createdAt: new Date("2024-12-10T09:15:00"),
+      createdAtStr: "2024-12-10",
       agent: "Şükran Demir",
-      assignedAt: new Date("2025-01-10T09:20:00"),
-      assignedDateStr: "2025-01-10",
+      assignedAt: new Date("2024-12-10T09:20:00"),
+      assignedDateStr: "2024-12-10",
       assignedTimeStr: "09:20",
       customerName: "Ali Yılmaz",
       platform: "FB",
       project: "Dolce Mare",
-      callAt: new Date("2025-01-10T09:25:00"),
+      callAt: new Date("2024-12-10T09:25:00"),
       callTimeStr: "09:25",
       callStatus: "Arandı",
       callDuration: 180,
@@ -451,16 +451,16 @@
     },
     {
       id: 2,
-      createdAt: new Date("2025-01-10T09:30:00"),
-      createdAtStr: "2025-01-10",
+      createdAt: new Date("2024-12-10T09:30:00"),
+      createdAtStr: "2024-12-10",
       agent: "Sıla Babaliki",
-      assignedAt: new Date("2025-01-10T09:35:00"),
-      assignedDateStr: "2025-01-10",
+      assignedAt: new Date("2024-12-10T09:35:00"),
+      assignedDateStr: "2024-12-10",
       assignedTimeStr: "09:35",
       customerName: "Ayşe Demir",
       platform: "IG",
       project: "Dolce Vita",
-      callAt: new Date("2025-01-10T09:50:00"),
+      callAt: new Date("2024-12-10T09:50:00"),
       callTimeStr: "09:50",
       callStatus: "Arandı",
       callDuration: 240,
@@ -471,16 +471,16 @@
     },
     {
       id: 3,
-      createdAt: new Date("2025-01-10T10:00:00"),
-      createdAtStr: "2025-01-10",
+      createdAt: new Date("2024-12-10T10:00:00"),
+      createdAtStr: "2024-12-10",
       agent: "Koray Yalçın",
-      assignedAt: new Date("2025-01-10T10:05:00"),
-      assignedDateStr: "2025-01-10",
+      assignedAt: new Date("2024-12-10T10:05:00"),
+      assignedDateStr: "2024-12-10",
       assignedTimeStr: "10:05",
       customerName: "Mehmet Kara",
       platform: "Web",
       project: "Sea Front",
-      callAt: new Date("2025-01-10T10:40:00"),
+      callAt: new Date("2024-12-10T10:40:00"),
       callTimeStr: "10:40",
       callStatus: "No Response 1",
       callDuration: 0,
@@ -491,16 +491,16 @@
     },
     {
       id: 4,
-      createdAt: new Date("2025-01-09T11:15:00"),
-      createdAtStr: "2025-01-09",
+      createdAt: new Date("2024-12-09T11:15:00"),
+      createdAtStr: "2024-12-09",
       agent: "Şükran Demir",
-      assignedAt: new Date("2025-01-09T11:25:00"),
-      assignedDateStr: "2025-01-09",
+      assignedAt: new Date("2024-12-09T11:25:00"),
+      assignedDateStr: "2024-12-09",
       assignedTimeStr: "11:25",
       customerName: "Zeynep Yalçın",
       platform: "FB",
       project: "Dolce Mare",
-      callAt: new Date("2025-01-09T11:50:00"),
+      callAt: new Date("2024-12-09T11:50:00"),
       callTimeStr: "11:50",
       callStatus: "Arandı",
       callDuration: 200,
@@ -511,16 +511,16 @@
     },
     {
       id: 5,
-      createdAt: new Date("2025-01-08T12:05:00"),
-      createdAtStr: "2025-01-08",
+      createdAt: new Date("2024-12-08T12:05:00"),
+      createdAtStr: "2024-12-08",
       agent: "Sıla Babaliki",
-      assignedAt: new Date("2025-01-08T12:10:00"),
-      assignedDateStr: "2025-01-08",
+      assignedAt: new Date("2024-12-08T12:10:00"),
+      assignedDateStr: "2024-12-08",
       assignedTimeStr: "12:10",
       customerName: "Can Arslan",
       platform: "IG",
       project: "Sea Front",
-      callAt: new Date("2025-01-08T12:20:00"),
+      callAt: new Date("2024-12-08T12:20:00"),
       callTimeStr: "12:20",
       callStatus: "Arandı",
       callDuration: 150,
@@ -531,16 +531,16 @@
     },
     {
       id: 6,
-      createdAt: new Date("2025-01-08T13:00:00"),
-      createdAtStr: "2025-01-08",
+      createdAt: new Date("2024-12-08T13:00:00"),
+      createdAtStr: "2024-12-08",
       agent: "Koray Yalçın",
-      assignedAt: new Date("2025-01-08T13:05:00"),
-      assignedDateStr: "2025-01-08",
+      assignedAt: new Date("2024-12-08T13:05:00"),
+      assignedDateStr: "2024-12-08",
       assignedTimeStr: "13:05",
       customerName: "Elif Aksoy",
       platform: "Web",
       project: "Dolce Vita",
-      callAt: new Date("2025-01-08T13:08:00"),
+      callAt: new Date("2024-12-08T13:08:00"),
       callTimeStr: "13:08",
       callStatus: "Arandı",
       callDuration: 90,
@@ -551,16 +551,16 @@
     },
     {
       id: 7,
-      createdAt: new Date("2025-01-07T15:20:00"),
-      createdAtStr: "2025-01-07",
+      createdAt: new Date("2024-12-07T15:20:00"),
+      createdAtStr: "2024-12-07",
       agent: "Şükran Demir",
-      assignedAt: new Date("2025-01-07T15:30:00"),
-      assignedDateStr: "2025-01-07",
+      assignedAt: new Date("2024-12-07T15:30:00"),
+      assignedDateStr: "2024-12-07",
       assignedTimeStr: "15:30",
       customerName: "Burak Sezer",
       platform: "FB",
       project: "Sea Front",
-      callAt: new Date("2025-01-07T16:20:00"),
+      callAt: new Date("2024-12-07T16:20:00"),
       callTimeStr: "16:20",
       callStatus: "No Response 3",
       callDuration: 0,
@@ -571,16 +571,16 @@
     },
     {
       id: 8,
-      createdAt: new Date("2025-01-06T10:45:00"),
-      createdAtStr: "2025-01-06",
+      createdAt: new Date("2024-12-06T10:45:00"),
+      createdAtStr: "2024-12-06",
       agent: "Sıla Babaliki",
-      assignedAt: new Date("2025-01-06T11:00:00"),
-      assignedDateStr: "2025-01-06",
+      assignedAt: new Date("2024-12-06T11:00:00"),
+      assignedDateStr: "2024-12-06",
       assignedTimeStr: "11:00",
       customerName: "Deniz Kaya",
       platform: "IG",
       project: "Dolce Mare",
-      callAt: new Date("2025-01-06T11:20:00"),
+      callAt: new Date("2024-12-06T11:20:00"),
       callTimeStr: "11:20",
       callStatus: "Arandı",
       callDuration: 210,
@@ -895,13 +895,21 @@
   function buildDailyConversionsData() {
     const labels = [];
     const values = [];
-    let value = 30 + Math.floor(Math.random() * 20);
+    const latestDate = new Date(
+      Math.max(...MOCK_DATA.map((row) => row.createdAt.getTime()))
+    );
+    const year = latestDate.getFullYear();
+    const month = latestDate.getMonth();
 
     for (let day = 1; day <= 31; day++) {
       labels.push(`${day} Ara`);
-      value += Math.floor(Math.random() * 15) - 7;
-      value = Math.max(10, Math.min(80, value));
-      values.push(value);
+      const countForDay = MOCK_DATA.filter(
+        (row) =>
+          row.createdAt.getFullYear() === year &&
+          row.createdAt.getMonth() === month &&
+          row.createdAt.getDate() === day
+      ).length;
+      values.push(countForDay);
     }
 
     return { labels, values };
@@ -1006,10 +1014,13 @@
     if (ch) ch.destroy();
   }
 
-  function updateDailyLeadSummary() {
+  function getLatestDateKey() {
     const latestTimestamp = Math.max(...MOCK_DATA.map((row) => row.createdAt.getTime()));
-    const latestDate = new Date(latestTimestamp);
-    const latestKey = formatDate(latestDate);
+    return formatDate(new Date(latestTimestamp));
+  }
+
+  function updateDailyLeadSummary() {
+    const latestKey = getLatestDateKey();
     const totalForDay = MOCK_DATA.filter(
       (row) => formatDate(row.createdAt) === latestKey
     ).length;
@@ -1406,7 +1417,7 @@
     renderCharts(filtered);
     renderTable(filtered);
     summaryBadgeEl.classList.remove("hidden");
-    summaryTextEl.textContent = formatDate(MOCK_DATA[0].createdAt);
+    summaryTextEl.textContent = getLatestDateKey();
   }
 
   // -------- Event Listeners --------
