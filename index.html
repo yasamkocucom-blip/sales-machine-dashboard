@@ -84,40 +84,44 @@
         <div class="h-64">
           <canvas id="dailyChart"></canvas>
         </div>
-        <div
-          class="flex h-64 flex-col justify-between rounded-2xl border border-slate-800/80 bg-slate-950/70 p-4 shadow-inner"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
-                Bugün Dağıtılan Toplam Lead
-              </p>
-              <p class="mt-1 text-[11px] text-slate-500">Anlık dağıtım göstergesi</p>
+        <div class="flex h-64 flex-col gap-4">
+          <div
+            class="flex flex-1 flex-col justify-between rounded-2xl border border-slate-800/80 bg-slate-950/70 p-4 shadow-inner"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
+                  Bugün Dağıtılan Toplam Lead
+                </p>
+                <p class="mt-1 text-[11px] text-slate-500">Anlık dağıtım göstergesi</p>
+              </div>
+              <div class="flex items-center gap-2 text-[11px] text-emerald-300">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span
+                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"
+                  ></span>
+                  <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                </span>
+                Canlı
+              </div>
             </div>
-            <div class="flex items-center gap-2 text-[11px] text-emerald-300">
-              <span class="relative flex h-2.5 w-2.5">
-                <span
-                  class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"
-                ></span>
-                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-              </span>
-              Canlı
+            <div class="flex flex-col gap-2">
+              <div id="dailyLeadTotal" class="text-4xl font-semibold text-slate-50">
+                -
+              </div>
+              <div class="text-xs text-slate-400">
+                <span id="dailyLeadDate">-</span> tarihindeki toplam lead sayısı
+              </div>
+            </div>
+            <div class="rounded-xl bg-slate-900/70 p-3 text-[11px] text-slate-300">
+              Gün içi hareketlilik sahte verilerle simüle edilir.
+              <span class="font-medium text-primary-200">Son güncelleme:</span>
+              <span id="dailyLeadTime">-</span>
             </div>
           </div>
-          <div class="flex flex-col gap-2">
-            <div id="dailyLeadTotal" class="text-4xl font-semibold text-slate-50">
-              -
-            </div>
-            <div class="text-xs text-slate-400">
-              <span id="dailyLeadDate">-</span> tarihindeki toplam lead sayısı
-            </div>
-          </div>
-          <div class="rounded-xl bg-slate-900/70 p-3 text-[11px] text-slate-300">
-            Gün içi hareketlilik sahte verilerle simüle edilir.
-            <span class="font-medium text-primary-200">Son güncelleme:</span>
-            <span id="dailyLeadTime">-</span>
-          </div>
-          <div class="rounded-xl border border-slate-800/70 bg-slate-950/80 p-3 text-[11px] text-slate-300">
+          <div
+            class="rounded-2xl border border-slate-800/80 bg-slate-950/70 p-3 text-[11px] text-slate-300 shadow-inner"
+          >
             <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500">
               Bugün Proje Dağılımı
             </p>
@@ -328,6 +332,9 @@
             <p class="text-xs text-slate-400">
               1 dakika altı, 1–2 dk, 2–5 dk ve 5+ dakikalık çağrı dağılımı.
             </p>
+            <p class="mt-1 text-[11px] text-slate-500">
+              Toplam arama: <span id="durationTotalCalls">-</span>
+            </p>
           </div>
         </div>
         <div class="h-64">
@@ -401,7 +408,7 @@
 <!-- Dashboard Script -->
 <script>
   // -------- Mock Data & Helpers --------
-  const AGENTS = ["Şükran Demir", "Sıla Babaliki", "Koray Yalçın"];
+  const AGENTS = ["Şükran Demir", "Sıla Babaliki", "Dilek Gümüş"];
   const PLATFORMS = ["FB", "IG", "Web"];
   const PROJECTS = [
     "Dolce Mare",
@@ -500,7 +507,7 @@
       id: 3,
       createdAt: new Date("2024-12-10T10:00:00"),
       createdAtStr: "2024-12-10",
-      agent: "Koray Yalçın",
+      agent: "Dilek Gümüş",
       assignedAt: new Date("2024-12-10T10:05:00"),
       assignedDateStr: "2024-12-10",
       assignedTimeStr: "10:05",
@@ -560,7 +567,7 @@
       id: 6,
       createdAt: new Date("2024-12-08T13:00:00"),
       createdAtStr: "2024-12-08",
-      agent: "Koray Yalçın",
+      agent: "Dilek Gümüş",
       assignedAt: new Date("2024-12-08T13:05:00"),
       assignedDateStr: "2024-12-08",
       assignedTimeStr: "13:05",
@@ -642,7 +649,7 @@
     const agentBaseScores = {
       "Şükran Demir": 85,
       "Sıla Babaliki": 88,
-      "Koray Yalçın": 82,
+      "Dilek Gümüş": 82,
     };
 
     const startId = data.length + 1;
@@ -779,6 +786,7 @@
   const dailyLeadDateEl = document.getElementById("dailyLeadDate");
   const dailyLeadTimeEl = document.getElementById("dailyLeadTime");
   const dailyLeadBreakdownEl = document.getElementById("dailyLeadBreakdown");
+  const durationTotalCallsEl = document.getElementById("durationTotalCalls");
   const summaryTextEl = document.getElementById("summaryText");
   const summaryBadgeEl = document.getElementById("summaryBadge");
   const tableBodyEl = document.getElementById("tableBody");
@@ -1056,10 +1064,12 @@
         ).length;
         return acc;
       }, {});
+      const totalCalls = rows.filter((r) => r.callStatus).length;
 
       return {
         agent,
         projectCalls,
+        totalCalls,
       };
     });
   }
@@ -1155,6 +1165,8 @@
     const platforms = buildPlatformData(filtered);
     const times = buildTimeData(filtered);
     const durations = buildDurationData(filtered);
+    const totalCalls = filtered.filter((r) => r.callStatus).length;
+    durationTotalCallsEl.textContent = totalCalls.toLocaleString("tr-TR");
     const funnelTotalPlugin = {
       id: "funnelTotalPlugin",
       afterDatasetsDraw(chart) {
@@ -1251,7 +1263,7 @@
     agentChart = new Chart(ctxAgent, {
       type: "bar",
       data: {
-        labels: agents.map((a) => a.agent),
+        labels: agents.map((a) => `${a.agent} (${a.totalCalls})`),
         datasets: agentDatasets,
       },
       options: {
