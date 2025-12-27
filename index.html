@@ -117,6 +117,12 @@
             <span class="font-medium text-primary-200">Son güncelleme:</span>
             <span id="dailyLeadTime">-</span>
           </div>
+          <div class="rounded-xl border border-slate-800/70 bg-slate-950/80 p-3 text-[11px] text-slate-300">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+              Bugün Proje Dağılımı
+            </p>
+            <div id="dailyLeadBreakdown" class="mt-2 space-y-1 text-[11px]"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -772,6 +778,7 @@
   const dailyLeadTotalEl = document.getElementById("dailyLeadTotal");
   const dailyLeadDateEl = document.getElementById("dailyLeadDate");
   const dailyLeadTimeEl = document.getElementById("dailyLeadTime");
+  const dailyLeadBreakdownEl = document.getElementById("dailyLeadBreakdown");
   const summaryTextEl = document.getElementById("summaryText");
   const summaryBadgeEl = document.getElementById("summaryBadge");
   const tableBodyEl = document.getElementById("tableBody");
@@ -836,6 +843,10 @@
     const total = filtered.length;
     const appointments = filtered.filter((r) => r.leadStatus === "Randevu").length;
     const conv = total ? ((appointments / total) * 100).toFixed(1) + "%" : "-";
+    const todayKey = getLatestDateKey();
+    const todayAssigned = filtered.filter(
+      (r) => r.assignedAt && formatDate(r.assignedAt) === todayKey
+    ).length;
 
     let sumSla = 0;
     let countSla = 0;
@@ -851,48 +862,62 @@
     const avgSla = countSla ? (sumSla / countSla).toFixed(1) : "-";
     const overRate = countSla ? Math.round((over15 / countSla) * 100) : 0;
 
-    const totalRejected = filtered.filter((r) => r.leadStatus === "Ret").length;
-    const totalFollowUp = filtered.filter((r) => r.leadStatus === "Follow Up").length;
+    const totalCalls = filtered.filter((r) => r.callStatus).length;
+    const successfulCalls = filtered.filter((r) => r.callStatus === "Arandı").length;
+    const successRate = totalCalls
+      ? ((successfulCalls / totalCalls) * 100).toFixed(1) + "%"
+      : "-";
+
+    const lostLeads = filtered.filter(
+      (r) => r.leadStatus === "Ret" || r.callStatus === "No Response 3"
+    ).length;
 
     const cards = [
       {
-        label: "Toplam Lead",
-        value: total,
-        helper: "Aktif veri",
-        tone: "sky",
+        label: "Bugün Atanan Lead",
+        value: todayAssigned,
+        helper: todayKey,
+        tone: "success",
       },
       {
-        label: "Randevu Oranı",
+        label: "Ort. Lead Yanıtlama Hızı (SLA)",
+        value: avgSla === "-" ? "-" : avgSla + " dk",
+        helper: avgSla === "-" ? "Yeterli veri yok" : `>%15 SLA: ${overRate}%`,
+        tone:
+          avgSla !== "-" && parseFloat(avgSla) > 15
+            ? "danger"
+            : "success",
+      },
+      {
+        label: "Randevuya Dönüşüm Oranı",
         value: conv,
-        helper: `${appointments} randevu`,
-        tone: "emerald",
+        helper: `${appointments} randevu / ${total} lead`,
+        tone: "neutral",
       },
       {
-        label: "Ortalama SLA",
-        value: avgSla + " dk",
-        helper: `%${overRate} SLA>15`,
-        tone: "amber",
+        label: "Toplam Arama & Başarılı Arama",
+        value: totalCalls ? `${totalCalls} arama` : "Veri yok",
+        helper: `Arandı % ${successRate}`,
+        tone: "success",
       },
       {
-        label: "Kayıp / Follow-up",
-        value: `${totalRejected}/${totalFollowUp}`,
-        helper: "Ret / Takip",
-        tone: "rose",
+        label: "Kayıp / Niteliksiz Lead",
+        value: lostLeads,
+        helper: "Ret + 3. no-response",
+        tone: lostLeads > 0 ? "danger" : "neutral",
       },
     ];
 
     kpiCardsEl.innerHTML = "";
     cards.forEach((c) => {
-      const card = document.createElement("div");
       const toneClasses =
-        c.tone === "sky"
-          ? "bg-sky-500/15 text-sky-200"
-          : c.tone === "emerald"
-          ? "bg-emerald-500/15 text-emerald-200"
-          : c.tone === "amber"
-          ? "bg-amber-400/15 text-amber-200"
-          : "bg-rose-500/15 text-rose-200";
+        c.tone === "danger"
+          ? "bg-red-500/10 text-red-300 ring-red-500/40"
+          : c.tone === "success"
+          ? "bg-emerald-500/10 text-emerald-300 ring-emerald-500/40"
+          : "bg-primary-500/10 text-primary-200 ring-primary-500/40";
 
+      const card = document.createElement("div");
       card.className =
         "rounded-3xl border border-slate-800/80 bg-slate-900/80 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.9)]";
       card.innerHTML = `
@@ -916,19 +941,29 @@
 
   function buildDailyConversionsData() {
     const labels = [];
-    const values = [];
+    const datasets = PROJECTS.map((project) => ({
+      label: project,
+      data: [],
+      backgroundColor: PROJECT_COLORS[project] || "#64748b",
+      borderRadius: 4,
+      barThickness: 18,
+    }));
+
     for (let day = 1; day <= 31; day++) {
       labels.push(`${day} Ara`);
-      const countForDay = MOCK_DATA.filter(
-        (row) =>
-          row.createdAt.getFullYear() === DAILY_CHART_YEAR &&
-          row.createdAt.getMonth() === DAILY_CHART_MONTH &&
-          row.createdAt.getDate() === day
-      ).length;
-      values.push(countForDay);
+      PROJECTS.forEach((project, index) => {
+        const countForDay = MOCK_DATA.filter(
+          (row) =>
+            row.project === project &&
+            row.createdAt.getFullYear() === DAILY_CHART_YEAR &&
+            row.createdAt.getMonth() === DAILY_CHART_MONTH &&
+            row.createdAt.getDate() === day
+        ).length;
+        datasets[index].data.push(countForDay);
+      });
     }
 
-    return { labels, values };
+    return { labels, datasets };
   }
 
   function renderDailyChart() {
@@ -939,24 +974,28 @@
       type: "bar",
       data: {
         labels: daily.labels,
-        datasets: [
-          {
-            label: "Lead Sayısı",
-            data: daily.values,
-            backgroundColor: "rgba(56,189,248,0.6)",
-            borderRadius: 6,
-          },
-        ],
+        datasets: daily.datasets,
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
+          legend: {
+            position: "bottom",
+            labels: { color: "#cbd5f5", font: { size: 11 } },
+          },
           tooltip: { enabled: true },
         },
         scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+          x: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
+          y: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
         },
       },
     });
@@ -1009,12 +1048,18 @@
   }
 
   function buildAgentData(filtered) {
-    return AGENTS.map((a) => {
-      const rows = filtered.filter((r) => r.agent === a);
+    return AGENTS.map((agent) => {
+      const rows = filtered.filter((r) => r.agent === agent);
+      const projectCalls = PROJECTS.reduce((acc, project) => {
+        acc[project] = rows.filter(
+          (r) => r.project === project && r.callStatus
+        ).length;
+        return acc;
+      }, {});
+
       return {
-        agent: a,
-        totalCalls: rows.filter((r) => r.callStatus).length,
-        appointments: rows.filter((r) => r.leadStatus === "Randevu").length,
+        agent,
+        projectCalls,
       };
     });
   }
@@ -1039,25 +1084,32 @@
   }
 
   function buildDurationData(filtered) {
-    const buckets = {
-      "<1 dk": 0,
-      "1–2 dk": 0,
-      "2–5 dk": 0,
-      "5+ dk": 0,
-    };
+    const labels = ["<1 dk", "1–2 dk", "2–5 dk", "5+ dk"];
+    const datasets = PROJECTS.map((project) => ({
+      label: project,
+      data: labels.map(() => 0),
+      backgroundColor: PROJECT_COLORS[project] || "#64748b",
+      borderRadius: 6,
+    }));
 
-    filtered.forEach((r) => {
-      const d = r.callDuration || 0;
+    filtered.forEach((row) => {
+      const d = row.callDuration || 0;
       if (d === 0) return;
-      if (d < 60) buckets["<1 dk"]++;
-      else if (d < 120) buckets["1–2 dk"]++;
-      else if (d < 300) buckets["2–5 dk"]++;
-      else buckets["5+ dk"]++;
+      let bucketIndex = 0;
+      if (d < 60) bucketIndex = 0;
+      else if (d < 120) bucketIndex = 1;
+      else if (d < 300) bucketIndex = 2;
+      else bucketIndex = 3;
+
+      const projectIndex = PROJECTS.indexOf(row.project);
+      if (projectIndex >= 0) {
+        datasets[projectIndex].data[bucketIndex] += 1;
+      }
     });
 
     return {
-      labels: Object.keys(buckets),
-      values: Object.values(buckets),
+      labels,
+      datasets,
     };
   }
 
@@ -1079,6 +1131,22 @@
     dailyLeadTotalEl.textContent = totalForDay.toLocaleString("tr-TR");
     dailyLeadDateEl.textContent = latestKey;
     dailyLeadTimeEl.textContent = formatTime(new Date());
+    dailyLeadBreakdownEl.innerHTML = "";
+    PROJECTS.forEach((project) => {
+      const count = MOCK_DATA.filter(
+        (row) => row.project === project && formatDate(row.createdAt) === latestKey
+      ).length;
+      if (!count) return;
+      const row = document.createElement("div");
+      row.className = "flex items-center justify-between";
+      row.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full" style="background:${PROJECT_COLORS[project]}"></span>
+          <span>${project}</span>
+        </div>
+        <span class="text-slate-400">${count}</span>`;
+      dailyLeadBreakdownEl.appendChild(row);
+    });
   }
 
   function renderCharts(filtered) {
@@ -1174,33 +1242,50 @@
     // Agent chart
     destroyChart(agentChart);
     const ctxAgent = document.getElementById("agentChart").getContext("2d");
+    const agentDatasets = PROJECTS.map((project) => ({
+      label: project,
+      data: agents.map((a) => a.projectCalls[project] || 0),
+      backgroundColor: PROJECT_COLORS[project] || "#64748b",
+      borderRadius: 6,
+    }));
     agentChart = new Chart(ctxAgent, {
       type: "bar",
       data: {
         labels: agents.map((a) => a.agent),
-        datasets: [
-          {
-            label: "Toplam Arama",
-            data: agents.map((a) => a.totalCalls),
-            backgroundColor: "rgba(59,130,246,0.6)",
-          },
-          {
-            label: "Randevu",
-            data: agents.map((a) => a.appointments),
-            backgroundColor: "rgba(34,197,94,0.7)",
-          },
-        ],
+        datasets: agentDatasets,
       },
       options: {
         responsive: true,
         plugins: {
           legend: {
+            position: "bottom",
             labels: { color: "#cbd5f5", font: { size: 11 } },
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              title(items) {
+                return items[0]?.label || "";
+              },
+              label(context) {
+                const project = context.dataset.label;
+                const count = context.parsed.y || 0;
+                return `${project}: ${count}`;
+              },
+            },
           },
         },
         scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+          x: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
+          y: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
         },
         onClick(_, elements) {
           if (!elements.length) return;
@@ -1333,28 +1418,28 @@
       type: "bar",
       data: {
         labels: durations.labels,
-        datasets: [
-          {
-            label: "Çağrı Sayısı",
-            data: durations.values,
-            backgroundColor: [
-              "rgba(56,189,248,0.7)",
-              "rgba(34,197,94,0.7)",
-              "rgba(250,204,21,0.8)",
-              "rgba(239,68,68,0.8)",
-            ],
-          },
-        ],
+        datasets: durations.datasets,
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { labels: { color: "#cbd5f5", font: { size: 11 } } },
+          legend: {
+            position: "bottom",
+            labels: { color: "#cbd5f5", font: { size: 11 } },
+          },
           tooltip: { enabled: true },
         },
         scales: {
-          x: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
-          y: { ticks: { color: "#cbd5f5" }, grid: { color: "#1e293b" } },
+          x: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
+          y: {
+            stacked: true,
+            ticks: { color: "#cbd5f5" },
+            grid: { color: "#1e293b" },
+          },
         },
       },
     });
